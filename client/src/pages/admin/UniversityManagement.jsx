@@ -29,7 +29,7 @@ import ModernButton from '../../components/ui/ModernButton';
 import DashboardHeading from '../../components/ui/DashboardHeading';
 import { useToast } from '../../context/ToastContext';
 
-const B2BManagement = () => {
+const UniversityManagement = () => {
     const [partners, setPartners] = useState([]);
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [openDiscount, setOpenDiscount] = useState(false);
@@ -90,7 +90,7 @@ const B2BManagement = () => {
             const { data } = await axios.get('/api/admin/users/all', config);
             const institutional = (data.users || []).filter(u => {
                 const role = u.role?.toLowerCase();
-                return role === 'partner';
+                return role === 'university';
             });
             setPartners(institutional);
         } catch (error) {
@@ -240,11 +240,11 @@ const B2BManagement = () => {
         <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="text-left">
-                    <DashboardHeading title="B2B Partners" />
+                    <DashboardHeading title="University Management" />
                 </div>
                 <div className="flex items-center space-x-3">
                     <ModernButton onClick={() => setOpenOnboard(true)}>
-                        <Plus size={18} className="mr-2" /> Add B2B Partner
+                        <Plus size={18} className="mr-2" /> Add University
                     </ModernButton>
                 </div>
             </div>
@@ -257,7 +257,7 @@ const B2BManagement = () => {
                             <Building2 size={24} />
                         </div>
                         <div className="text-left">
-                            <p className="text-white/50 text-xs font-bold uppercase tracking-wider font-inter">Total Entities</p>
+                            <p className="text-white/50 text-xs font-bold uppercase tracking-wider font-inter">Total Universities</p>
                             <p className="text-base font-semibold text-white font-inter">{partners.length}</p>
                         </div>
                     </div>
@@ -871,4 +871,4 @@ const B2BManagement = () => {
     );
 };
 
-export default B2BManagement;
+export default UniversityManagement;

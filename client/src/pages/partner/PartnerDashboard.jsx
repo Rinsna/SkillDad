@@ -171,14 +171,18 @@ const PartnerDashboard = () => {
     };
 
     const filteredStudents = students.filter(student => {
-        const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            student.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = filterStatus === 'all' || student.status === filterStatus;
+        const name = student.name || '';
+        const email = student.email || '';
+        const sStatus = student.status || 'active';
+
+        const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = filterStatus === 'all' || sStatus === filterStatus;
         return matchesSearch && matchesFilter;
     });
 
-    const totalDiscountSavings = students.reduce((sum, student) => sum + student.discountSaved, 0);
-    const totalRevenue = students.reduce((sum, student) => sum + student.totalSpent, 0);
+    const totalDiscountSavings = students.reduce((sum, student) => sum + (student.discountSaved || 0), 0);
+    const totalRevenue = students.reduce((sum, student) => sum + (student.totalSpent || 0), 0);
 
     const handleRequestPayout = async () => {
         const amount = prompt('Enter amount to withdraw:', stats.totalEarnings);
@@ -520,43 +524,46 @@ const PartnerDashboard = () => {
 
                         {/* Students List */}
                         <div className="grid gap-4">
-                            {filteredStudents.map((student) => (
-                                <GlassCard key={student.id} className="hover:border-primary/40 transition-all">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary font-bold">
-                                                {student.name.split(' ').map((n, i) => n[0]).join('')}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-white">{student.name}</h3>
-                                                <p className="text-sm text-white">{student.email}</p>
-                                                <div className="flex items-center gap-4 mt-1">
-                                                    <span className="text-xs text-white">Enrolled: {student.enrolledDate}</span>
-                                                    <span className={`text-xs px-2 py-1 rounded-full ${student.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' :
-                                                        student.status === 'completed' ? 'bg-purple-500/20 text-purple-400' :
-                                                            'bg-gray-500/20 text-gray-400'
-                                                        }`}>
-                                                        {student.status}
-                                                    </span>
+                            {filteredStudents.map((student) => {
+                                const initial = student.name ? student.name.charAt(0).toUpperCase() : '?';
+                                return (
+                                    <GlassCard key={student.id || student._id} className="hover:border-primary/40 transition-all">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary font-bold">
+                                                    {initial}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-white">{student.name || 'Unknown Student'}</h3>
+                                                    <p className="text-sm text-white">{student.email}</p>
+                                                    <div className="flex items-center gap-4 mt-1">
+                                                        <span className="text-xs text-white">Enrolled: {student.enrolledDate || new Date(student.createdAt).toLocaleDateString()}</span>
+                                                        <span className={`text-xs px-2 py-1 rounded-full ${student.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' :
+                                                            student.status === 'completed' ? 'bg-purple-500/20 text-purple-400' :
+                                                                'bg-gray-500/20 text-gray-400'
+                                                            }`}>
+                                                            {student.status || 'Active'}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center gap-6">
-                                            <div className="text-right">
-                                                <p className="text-sm font-bold text-white">{student.progress}% Complete</p>
-                                                <p className="text-xs text-white">${student.totalSpent} spent</p>
-                                                <p className="text-xs text-emerald-400">${student.discountSaved} saved</p>
+                                            <div className="flex items-center gap-6">
+                                                <div className="text-right">
+                                                    <p className="text-sm font-bold text-white">{student.progress || 0}% Complete</p>
+                                                    <p className="text-xs text-white">${student.totalSpent || 0} spent</p>
+                                                    <p className="text-xs text-emerald-400">${student.discountSaved || 0} saved</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setSelectedStudent(student)}
+                                                    className="p-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors"
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
                                             </div>
-                                            <button
-                                                onClick={() => setSelectedStudent(student)}
-                                                className="p-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors"
-                                            >
-                                                <Eye size={18} />
-                                            </button>
                                         </div>
-                                    </div>
-                                </GlassCard>
-                            ))}
+                                    </GlassCard>
+                                )
+                            })}
                         </div>
                     </motion.div>
                 )}

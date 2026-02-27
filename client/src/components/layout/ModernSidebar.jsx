@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard,
+    Briefcase,
     BookOpen,
     Users,
     Building2,
@@ -17,7 +18,8 @@ import {
     GraduationCap,
     Image,
     Bell,
-    Ticket
+    Ticket,
+    Wallet
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoImg from '../../assets/logo.png';
@@ -42,7 +44,8 @@ const ModernSidebar = ({ isOpen, setIsOpen }) => {
                 { name: 'Exams', icon: Trophy, path: '/admin/exams' },
                 { name: 'Users', icon: Users, path: '/admin/users' },
                 { name: 'Students', icon: GraduationCap, path: '/admin/students' },
-                { name: 'Companies', icon: Building2, path: '/admin/b2b' },
+                { name: 'University', icon: Building2, path: '/admin/university' },
+                { name: 'B2B Partners', icon: Briefcase, path: '/admin/b2b' },
                 { name: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
                 { name: 'Coupons', icon: Ticket, path: '/admin/coupons' },
                 { name: 'Payouts', icon: DollarSign, path: '/admin/payouts' },
@@ -64,7 +67,7 @@ const ModernSidebar = ({ isOpen, setIsOpen }) => {
         } else if (userRole === 'partner') {
             return [
                 { name: 'Dashboard', icon: LayoutDashboard, path: '/partner/dashboard' },
-                { name: 'Discounts', icon: BarChart3, path: '/partner/discounts' },
+                { name: 'Commission & Wallet', icon: Wallet, path: '/partner/commission' },
                 { name: 'Support', icon: LifeBuoy, path: '/partner/support' },
                 { name: 'Settings', icon: Settings, path: '/partner/settings' },
             ];

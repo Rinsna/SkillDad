@@ -59,7 +59,7 @@ const ExamManagement = lazy(() => import('./pages/university/ExamManagement'));
 
 // Partner Pages
 const PartnerDashboard = lazy(() => import('./pages/partner/PartnerDashboard'));
-const DiscountManagement = lazy(() => import('./pages/partner/DiscountManagement'));
+const CommissionWallet = lazy(() => import('./pages/partner/CommissionWallet'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -67,6 +67,7 @@ const CourseManager = lazy(() => import('./pages/admin/CourseManager'));
 const CourseEditor = lazy(() => import('./pages/admin/CourseEditor'));
 const UserList = lazy(() => import('./pages/admin/UserList'));
 const StudentManagement = lazy(() => import('./pages/admin/StudentManagement'));
+const UniversityManagement = lazy(() => import('./pages/admin/UniversityManagement'));
 const B2BManagement = lazy(() => import('./pages/admin/B2BManagement'));
 const PlatformAnalytics = lazy(() => import('./pages/admin/PlatformAnalytics'));
 const ProjectManager = lazy(() => import('./pages/admin/ProjectManager'));
@@ -166,7 +167,7 @@ function App() {
                 <Route element={<ProtectedRoute allowedRoles={['partner', 'admin']} />}>
                   <Route path="/partner" element={<DashboardLayout />}>
                     <Route path="dashboard" element={<PartnerDashboard />} />
-                    <Route path="discounts" element={<DiscountManagement />} />
+                    <Route path="commission" element={<CommissionWallet />} />
                     <Route path="support" element={<Support />} />
                     <Route path="settings" element={<Settings />} />
                   </Route>
@@ -183,6 +184,7 @@ function App() {
                     <Route path="exams" element={<ExamScheduler />} />
                     <Route path="users" element={<UserList />} />
                     <Route path="students" element={<StudentManagement />} />
+                    <Route path="university" element={<UniversityManagement />} />
                     <Route path="b2b" element={<B2BManagement />} />
                     <Route path="analytics" element={<PlatformAnalytics />} />
                     <Route path="coupons" element={<CouponManager />} />
