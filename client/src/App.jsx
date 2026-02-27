@@ -79,6 +79,7 @@ const GatewayConfigPanel = lazy(() => import('./pages/admin/GatewayConfigPanel')
 const ReconciliationDashboard = lazy(() => import('./pages/admin/ReconciliationDashboard'));
 const PaymentMonitoringDashboard = lazy(() => import('./pages/admin/PaymentMonitoringDashboard'));
 const CommunicationHub = lazy(() => import('./pages/admin/CommunicationHub'));
+const CouponManager = lazy(() => import('./pages/admin/CouponManager'));
 
 // Finance Pages
 const FinanceDashboard = lazy(() => import('./pages/finance/FinanceDashboard'));
@@ -184,6 +185,7 @@ function App() {
                     <Route path="students" element={<StudentManagement />} />
                     <Route path="b2b" element={<B2BManagement />} />
                     <Route path="analytics" element={<PlatformAnalytics />} />
+                    <Route path="coupons" element={<CouponManager />} />
                     <Route path="payouts" element={<PayoutManager />} />
                     <Route path="partner-logos" element={<PartnerLogoManager />} />
                     <Route path="refunds" element={<AdminRefundPanel />} />

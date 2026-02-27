@@ -1,0 +1,145 @@
+/* Performance Optimizations for Smooth Scrolling and Animations */
+
+/* Enable GPU acceleration for specific elements only */
+.gpu-accelerated,
+.animate-float,
+.animate-float-delayed,
+.animate-float-slow,
+.animate-spin-slow,
+.animate-scroll,
+.animate-flow-horizontal,
+.animate-pulse-slow,
+.animate-pulse {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Smooth scrolling - ALLOW vertical scrolling */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Optimize glass cards */
+.glass-card {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Optimize transitions - use specific properties and faster durations */
+.transition-all {
+  transition-property: transform, opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Optimize hover effects - reduce scale and rotation */
+button:hover,
+a:hover {
+  transform: translate3d(0, 0, 0);
+}
+
+/* Optimize sticky elements */
+.sticky {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Optimize fixed elements */
+.fixed {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Optimize framer-motion animations */
+[data-framer-component-type] {
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Reduce blur effects on lower-end devices */
+@media (max-width: 768px) {
+  .glass-card {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* Responsive table scrolling */
+@media (max-width: 1024px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    font-size: 0.875rem;
+  }
+}
+
+/* Mobile responsive utilities */
+@media (max-width: 640px) {
+  /* Reduce padding on mobile */
+  .space-y-8 {
+    gap: 1.5rem;
+  }
+  
+  /* Smaller text on mobile */
+  h1 {
+    font-size: 1.25rem;
+  }
+  
+  h2 {
+    font-size: 1.125rem;
+  }
+  
+  /* Compact buttons on mobile */
+  button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

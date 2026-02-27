@@ -1,0 +1,190 @@
+import { useEffect, useRef, useState } from 'react';
+import ZoomMtgEmbedded from '@zoom/meetingsdk/embedded';
+import axios from 'axios';
+import MockZoomMeeting from './MockZoomMeeting';
+
+/**
+ * ZoomMeeting Component
+ * Embeds Zoom Meeting SDK for joining live sessions
+ * 
+ * @param {string} sessionId - The session ID to join
+ * @param {boolean} isHost - Whether the user is the host (instructor/university)
+ * @param {function} onLeave - Callback when user leaves the meeting
+ * @param {function} onError - Callback when an error occurs
+ */
+const ZoomMeeting = ({ sessionId, isHost = false, onLeave, onError }) => {
+  // Check if we should use mock mode (when SDK config returns mock data)
+  const [useMockMode, setUseMockMode] = useState(false);
+  const meetingSDKElement = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sdkClient, setSdkClient] = useState(null);
+
+  useEffect(() => {
+    const initializeZoom = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch SDK configuration from backend
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Authentication required. Please log in.');
+        }
+
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        };
+
+        console.log(`[Zoom] Fetching SDK config for session: ${sessionId}`);
+        const response = await axios.get(`/api/sessions/${sessionId}/zoom-config`, config);
+        const sdkConfig = response.data;
+
+        // Check if we're in mock mode (SDK key starts with MOCK_)
+        if (sdkConfig.sdkKey && sdkConfig.sdkKey.startsWith('MOCK_')) {
+          console.log('[Zoom] Mock mode detected, using MockZoomMeeting component');
+          setUseMockMode(true);
+          setLoading(false);
+          return;
+        }
+
+        console.log('[Zoom] SDK config received, initializing SDK...');
+
+        // Initialize Zoom SDK
+        const client = ZoomMtgEmbedded.createClient();
+        setSdkClient(client);
+
+        // Initialize the SDK with the meeting container
+        await client.init({
+          zoomAppRoot: meetingSDKElement.current,
+          language: 'en-US',
+          patchJsMedia: true,
+          leaveOnPageUnload: true
+        });
+
+        console.log('[Zoom] SDK initialized, joining meeting...');
+
+        // Join the meeting
+        await client.join({
+          sdkKey: sdkConfig.sdkKey,
+          signature: sdkConfig.signature,
+          meetingNumber: sdkConfig.meetingNumber,
+          password: sdkConfig.passWord,
+          userName: sdkConfig.userName,
+          userEmail: sdkConfig.userEmail,
+          tk: '', // Registration token (not used)
+          zak: '' // Zoom access token (not used for SDK)
+        });
+
+        console.log('[Zoom] Successfully joined meeting');
+        setLoading(false);
+
+      } catch (err) {
+        console.error('[Zoom] Error initializing Zoom:', err);
+        const errorMessage = err.response?.data?.message || err.message || 'Failed to join meeting';
+        setError(errorMessage);
+        setLoading(false);
+        
+        if (onError) {
+          onError(errorMessage);
+        }
+      }
+    };
+
+    if (sessionId && meetingSDKElement.current) {
+      initializeZoom();
+    }
+
+    // Cleanup function
+    return () => {
+      if (sdkClient) {
+        try {
+          console.log('[Zoom] Cleaning up SDK client');
+          sdkClient.leaveMeeting();
+        } catch (err) {
+          console.warn('[Zoom] Error during cleanup:', err);
+        }
+      }
+    };
+  }, [sessionId, isHost]);
+
+  const handleLeave = () => {
+    if (sdkClient) {
+      try {
+        sdkClient.leaveMeeting();
+        if (onLeave) {
+          onLeave();
+        }
+      } catch (err) {
+        console.error('[Zoom] Error leaving meeting:', err);
+      }
+    }
+  };
+
+  // Use mock component if in mock mode
+  if (useMockMode) {
+    return <MockZoomMeeting sessionId={sessionId} isHost={isHost} onLeave={onLeave} onError={onError} />;
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-full min-h-[600px] flex items-center justify-center bg-black/40 border border-red-500/30 rounded-lg">
+        <div className="text-center p-8 max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">Unable to Join Meeting</h3>
+          <p className="text-white/60 text-sm mb-6">{error}</p>
+          <button
+            onClick={onLeave}
+            className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-sm font-medium transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full h-full min-h-[600px] flex items-center justify-center bg-black/40 border border-primary/30 rounded-lg">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
+          <p className="text-white/60 text-sm">Connecting to meeting...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full min-h-[600px]">
+      {/* Zoom Meeting Container */}
+      <div 
+        ref={meetingSDKElement} 
+        className="w-full h-full min-h-[600px] rounded-lg overflow-hidden"
+        style={{ width: '100%', height: '100%' }}
+      />
+      
+      {/* Leave Meeting Button (optional overlay) */}
+      <div className="absolute top-4 right-4 z-50">
+        <button
+          onClick={handleLeave}
+          className="px-4 py-2 bg-red-500/90 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow-lg transition-colors flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Leave Meeting
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ZoomMeeting;
