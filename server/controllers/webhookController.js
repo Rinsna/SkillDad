@@ -81,17 +81,22 @@ const handleZoomWebhook = async (req, res) => {
 
     console.log('[Zoom Webhook] Received webhook event:', {
       event: body.event,
-      timestamp: timestamp
+      timestamp: timestamp,
+      hasSignature: !!signature,
+      hasTimestamp: !!timestamp,
+      headers: req.headers
     });
 
     // Handle endpoint URL validation FIRST (before signature verification)
     // This allows initial setup when ZOOM_WEBHOOK_SECRET is not yet configured
     if (body.event === 'endpoint.url_validation') {
       console.log('[Zoom Webhook] URL validation request received');
+      console.log('[Zoom Webhook] Request body:', JSON.stringify(body, null, 2));
       
       // Respond with the plainToken in an encrypted_token field
       const plainToken = body.payload?.plainToken;
       if (!plainToken) {
+        console.error('[Zoom Webhook] Missing plainToken in validation request');
         return res.status(400).json({
           success: false,
           message: 'Missing plainToken in validation request'
@@ -104,10 +109,12 @@ const handleZoomWebhook = async (req, res) => {
       // This enables initial webhook setup
       if (!ZOOM_WEBHOOK_SECRET) {
         console.warn('[Zoom Webhook] ZOOM_WEBHOOK_SECRET not configured - allowing validation for initial setup');
-        return res.status(200).json({
+        const response = {
           plainToken: plainToken,
           encryptedToken: plainToken // Return plainToken as encryptedToken for initial setup
-        });
+        };
+        console.log('[Zoom Webhook] Sending validation response:', response);
+        return res.status(200).json(response);
       }
 
       // Create encrypted token using HMAC SHA256
@@ -116,10 +123,12 @@ const handleZoomWebhook = async (req, res) => {
         .update(plainToken)
         .digest('hex');
 
-      return res.status(200).json({
+      const response = {
         plainToken: plainToken,
         encryptedToken: encryptedToken
-      });
+      };
+      console.log('[Zoom Webhook] Sending validation response with secret:', response);
+      return res.status(200).json(response);
     }
 
     // Verify webhook signature for all other events
