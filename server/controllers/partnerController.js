@@ -64,13 +64,14 @@ const getDiscounts = async (req, res) => {
 // @route   POST /api/partner/payout
 // @access  Private (Partner)
 const requestPayout = async (req, res) => {
-    const { amount } = req.body;
+    const { amount, notes } = req.body;
 
     try {
         // In a real app, verify partner has enough earnings
         const payout = await Payout.create({
             partner: req.user.id,
             amount,
+            notes: notes || 'Pariout request',
             status: 'pending',
         });
 

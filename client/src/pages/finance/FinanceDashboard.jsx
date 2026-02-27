@@ -570,6 +570,7 @@ const FinanceDashboard = () => {
                                         <tr>
                                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Partner</th>
                                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Amount</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Notes</th>
                                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Request Date</th>
                                             <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase">Actions</th>
                                         </tr>
@@ -589,6 +590,9 @@ const FinanceDashboard = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm font-bold text-emerald-400">${payout.amount.toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-300 max-w-[200px] truncate" title={payout.notes || 'No notes'}>
+                                                    {payout.notes || 'N/A'}
+                                                </td>
                                                 <td className="px-6 py-4 text-sm text-gray-300">
                                                     {payout.requestDate ? new Date(payout.requestDate).toLocaleDateString() : 'N/A'}
                                                 </td>
@@ -628,6 +632,7 @@ const FinanceDashboard = () => {
                                         <tr>
                                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Partner</th>
                                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Amount</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Notes</th>
                                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Payout Date</th>
                                             <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase">Proof</th>
                                         </tr>
@@ -637,6 +642,9 @@ const FinanceDashboard = () => {
                                             <tr key={payout._id} className="hover:bg-white/5 transition-colors">
                                                 <td className="px-6 py-4 text-sm font-medium text-white">{payout.partner?.name}</td>
                                                 <td className="px-6 py-4 text-sm font-bold text-emerald-400">${payout.amount.toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-300 max-w-[200px] truncate" title={payout.notes || 'No notes'}>
+                                                    {payout.notes || 'N/A'}
+                                                </td>
                                                 <td className="px-6 py-4 text-sm text-gray-300">
                                                     {new Date(payout.payoutDate).toLocaleDateString()}
                                                 </td>
