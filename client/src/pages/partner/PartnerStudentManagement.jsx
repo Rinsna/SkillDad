@@ -32,8 +32,10 @@ const PartnerStudentManagement = () => {
         email: '',
         phone: '',
         password: '',
-        course: ''
+        course: '',
+        partnerCode: ''
     });
+    const [partnerCodes, setPartnerCodes] = useState([]);
     const { showToast } = useToast();
 
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -55,8 +57,21 @@ const PartnerStudentManagement = () => {
     useEffect(() => {
         if (userInfo.token) {
             fetchStudents();
+            fetchCodes();
         }
     }, []);
+
+    const fetchCodes = async () => {
+        try {
+            const { data } = await axios.get('/api/partner/discounts', config);
+            setPartnerCodes(data);
+            if (data.length > 0) {
+                setNewStudentData(prev => ({ ...prev, partnerCode: data[0].code }));
+            }
+        } catch (error) {
+            console.error('Error fetching partner codes:', error);
+        }
+    };
 
     const handleRegisterStudent = async () => {
         try {
@@ -68,7 +83,7 @@ const PartnerStudentManagement = () => {
             await axios.post('/api/partner/register-student', newStudentData, config);
 
             setShowRegisterStudentModal(false);
-            setNewStudentData({ name: '', email: '', phone: '', password: '', course: '' });
+            setNewStudentData({ name: '', email: '', phone: '', password: '', course: '', partnerCode: partnerCodes.length > 0 ? partnerCodes[0].code : '' });
             showToast('Student registered in the system successfully!', 'success');
 
             // Refresh list
@@ -244,6 +259,20 @@ const PartnerStudentManagement = () => {
                                     className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-primary"
                                     placeholder="+1 (555) 000-0000"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-white/70 mb-2">Affiliation Code *</label>
+                                <select
+                                    value={newStudentData.partnerCode}
+                                    onChange={(e) => setNewStudentData({ ...newStudentData, partnerCode: e.target.value })}
+                                    className="w-full px-4 py-2 bg-[#0B0F1A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary"
+                                    required
+                                >
+                                    <option value="" disabled>Select an affiliation code</option>
+                                    {partnerCodes.map(c => (
+                                        <option key={c._id} value={c.code}>{c.code} ({c.type === 'percentage' ? `${c.value}%` : `$${c.value}`} off)</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                         <div className="flex gap-3 mt-6">
