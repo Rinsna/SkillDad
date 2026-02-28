@@ -146,17 +146,32 @@ const PartnerDashboard = () => {
             ]);
 
             setStats(statsRes.data);
-            setStudents(studentsRes.data.length > 0 ? studentsRes.data : mockStudents); // Use mock if empty for demo
-            setDiscountCodes(discountsRes.data.length > 0 ? discountsRes.data : mockDiscountCodes);
+            setStudents(studentsRes.data.length > 0 ? studentsRes.data : []); // Removed student mock fallback
+            setDiscountCodes(discountsRes.data || []); // strictly use real DB records, not mock records
             setPayoutRequests(payoutsRes.data.length > 0 ? payoutsRes.data : mockPayoutRequests);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching partner data:', error);
-            // Fallback to mocks for robust UI during development
-            setStudents(mockStudents);
-            setDiscountCodes(mockDiscountCodes);
+            setStudents([]);
+            setDiscountCodes([]);
             setPayoutRequests(mockPayoutRequests);
             setLoading(false);
+        }
+    };
+
+    const handleCreateCode = async (e) => {
+        e.preventDefault();
+        const codeInput = e.target.elements.code.value.toUpperCase();
+        const valueInput = e.target.elements.value.value;
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+            await axios.post('/api/partner/discounts', { code: codeInput, value: Number(valueInput), type: 'percentage' }, config);
+            alert('Discount code successfully created! You can now register students with it.');
+            e.target.reset();
+            fetchStats();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Failed to create discount code.');
         }
     };
 
@@ -499,9 +514,9 @@ const PartnerDashboard = () => {
                                                 value={registerData.partnerCode}
                                                 onChange={(e) => setRegisterData({ ...registerData, partnerCode: e.target.value })}
                                             >
-                                                <option value="">Select a code</option>
+                                                <option value="" className="bg-[#0B0F1A]">Select a code</option>
                                                 {discountCodes.map((code, i) => (
-                                                    <option key={i} value={code.code}>{code.code} ({code.type === 'percentage' ? `${code.value}%` : `$${code.value}`})</option>
+                                                    <option key={i} value={code.code} className="bg-[#0B0F1A]">{code.code} ({code.type === 'percentage' ? `${code.value || code.discount}%` : `$${code.value || code.discount}`})</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -577,43 +592,41 @@ const PartnerDashboard = () => {
                         exit={{ opacity: 0, y: -20 }}
                         className="space-y-6"
                     >
-                        {/* Generate New Code */}
+                        {/* Create New Code */}
                         <GlassCard>
                             <h2 className="text-base font-bold text-white font-poppins mb-6 flex items-center">
-                                <Link size={18} className="mr-2 text-primary" /> Generate Enrollment Links
+                                <Plus size={18} className="mr-2 text-primary" /> Create New Discount / Affiliation Code
                             </h2>
-                            <div className="grid md:grid-cols-2 gap-6">
+                            <form onSubmit={handleCreateCode} className="grid md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-white mb-2">General Enrollment Link</label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={generateEnrollmentLink()}
-                                            readOnly
-                                            className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
-                                        />
-                                        <button
-                                            onClick={() => copyToClipboard(generateEnrollmentLink())}
-                                            className="px-4 py-3 bg-primary text-white rounded-xl hover:bg-primary/80 transition-colors"
-                                        >
-                                            <Copy size={18} />
-                                        </button>
-                                    </div>
+                                    <label className="block text-sm font-bold text-white mb-2">Code Name (e.g. SKILL50)</label>
+                                    <input
+                                        type="text"
+                                        name="code"
+                                        required
+                                        placeholder="Enter UNIQUE code"
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary"
+                                    />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-white mb-2">Course-Specific Link</label>
-                                    <div className="flex gap-2">
-                                        <select className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
-                                            <option value="react">React Masterclass</option>
-                                            <option value="nodejs">Node.js Backend</option>
-                                            <option value="python">Python Data Science</option>
-                                        </select>
-                                        <button className="px-4 py-3 bg-primary text-white rounded-xl hover:bg-primary/80 transition-colors">
-                                            Generate
-                                        </button>
-                                    </div>
+                                    <label className="block text-sm font-bold text-white mb-2">Discount Percentage (%)</label>
+                                    <input
+                                        type="number"
+                                        name="value"
+                                        required
+                                        min="1"
+                                        max="100"
+                                        placeholder="10"
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary"
+                                    />
                                 </div>
-                            </div>
+                                <div className="flex items-end">
+                                    <ModernButton type="submit" className="w-full py-3">
+                                        <Plus size={18} className="mr-2" />
+                                        Create Real Code
+                                    </ModernButton>
+                                </div>
+                            </form>
                         </GlassCard>
 
                         {/* Existing Codes */}
@@ -628,21 +641,21 @@ const PartnerDashboard = () => {
                                             <div>
                                                 <h3 className="font-bold text-white text-lg">{code.code}</h3>
                                                 <p className="text-sm text-text-muted">
-                                                    {code.type === 'percentage' ? `${code.discount}% off` : `$${code.discount} off`}
+                                                    {code.type === 'percentage' ? `${code.value || code.discount}% off` : `$${code.value || code.discount} off`}
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm font-bold text-white">{code.uses}/{code.maxUses} uses</p>
-                                                <span className={`text-xs px-2 py-1 rounded-full ${code.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-500/20 text-gray-400'
+                                                <p className="text-sm font-bold text-white">{code.usedCount || 0} uses</p>
+                                                <span className={`text-xs px-2 py-1 rounded-full ${code.isActive !== false ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-500/20 text-gray-400'
                                                     }`}>
-                                                    {code.active ? 'Active' : 'Inactive'}
+                                                    {code.isActive !== false ? 'Active' : 'Inactive'}
                                                 </span>
                                             </div>
                                         </div>
                                         <div className="mt-3 w-full bg-white/10 rounded-full h-2">
                                             <div
                                                 className="bg-primary h-2 rounded-full transition-all"
-                                                style={{ width: `${(code.uses / code.maxUses) * 100}%` }}
+                                                style={{ width: `${Math.min(((code.usedCount || 0) / 100) * 100, 100)}%` }}
                                             />
                                         </div>
                                     </div>
