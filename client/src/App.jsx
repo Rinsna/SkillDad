@@ -60,6 +60,7 @@ const ExamManagement = lazy(() => import('./pages/university/ExamManagement'));
 // Partner Pages
 const PartnerDashboard = lazy(() => import('./pages/partner/PartnerDashboard'));
 const CommissionWallet = lazy(() => import('./pages/partner/CommissionWallet'));
+const PartnerStudentManagement = lazy(() => import('./pages/partner/PartnerStudentManagement'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -167,6 +168,7 @@ function App() {
                 <Route element={<ProtectedRoute allowedRoles={['partner', 'admin']} />}>
                   <Route path="/partner" element={<DashboardLayout />}>
                     <Route path="dashboard" element={<PartnerDashboard />} />
+                    <Route path="students" element={<PartnerStudentManagement />} />
                     <Route path="commission" element={<CommissionWallet />} />
                     <Route path="support" element={<Support />} />
                     <Route path="settings" element={<Settings />} />

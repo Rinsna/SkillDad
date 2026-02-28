@@ -3,7 +3,7 @@ import { Box, Typography, Button, TextField, Dialog, DialogTitle, DialogContent,
 import axios from 'axios';
 import GlassCard from '../../components/ui/GlassCard';
 import ModernButton from '../../components/ui/ModernButton';
-import { Wallet, History, Users, DollarSign, Calculate, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Wallet, History, Users, DollarSign, Calculator, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const CommissionWallet = () => {
@@ -219,8 +219,8 @@ const CommissionWallet = () => {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full ${payout.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' :
-                                                payout.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
-                                                    'bg-red-500/20 text-red-400'
+                                            payout.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
+                                                'bg-red-500/20 text-red-400'
                                             }`}>
                                             {payout.status === 'approved' && <CheckCircle2 size={12} className="mr-1" />}
                                             {payout.status === 'pending' && <AlertCircle size={12} className="mr-1" />}

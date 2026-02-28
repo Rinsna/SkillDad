@@ -67,6 +67,7 @@ const ModernSidebar = ({ isOpen, setIsOpen }) => {
         } else if (userRole === 'partner') {
             return [
                 { name: 'Dashboard', icon: LayoutDashboard, path: '/partner/dashboard' },
+                { name: 'Students Manage', icon: Users, path: '/partner/students' },
                 { name: 'Commission & Wallet', icon: Wallet, path: '/partner/commission' },
                 { name: 'Support', icon: LifeBuoy, path: '/partner/support' },
                 { name: 'Settings', icon: Settings, path: '/partner/settings' },
