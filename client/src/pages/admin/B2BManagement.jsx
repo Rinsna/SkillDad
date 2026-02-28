@@ -13,7 +13,10 @@ import {
     BarChart3,
     Edit3,
     FileText,
-    Upload
+    Upload,
+    Eye,
+    Wallet,
+    Ticket
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -35,6 +38,8 @@ const B2BManagement = () => {
     const [openDiscount, setOpenDiscount] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [openOnboard, setOpenOnboard] = useState(false);
+    const [openStats, setOpenStats] = useState(false);
+    const [partnerStats, setPartnerStats] = useState(null);
     const [newRate, setNewRate] = useState(0);
     const [editData, setEditData] = useState({
         name: '',
@@ -195,6 +200,22 @@ const B2BManagement = () => {
     const handleRapidAssign = (course) => {
         setSelectedCourse(course);
         setOpenAssign(true);
+    };
+
+    const handleViewStats = async (partner) => {
+        try {
+            setLoading(true);
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+            const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+            const { data } = await axios.get(`/api/admin/partners/${partner._id}`, config);
+            setPartnerStats(data.stats || {});
+            setSelectedPartner(partner);
+            setOpenStats(true);
+        } catch (error) {
+            showToast('Failed to load partner analytics', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const confirmAssignment = (partnerName) => {
@@ -473,6 +494,16 @@ const B2BManagement = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                handleViewStats(partner);
+                                            }}
+                                            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/40 hover:text-emerald-400"
+                                            title="View Partner Statistics"
+                                        >
+                                            <Eye size={18} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 setSelectedPartner(partner);
                                                 setOpenSendDoc(true);
                                             }}
@@ -513,6 +544,49 @@ const B2BManagement = () => {
                     </table>
                 </div>
             </GlassCard>
+
+            {/* Partner Details Modal */}
+            {openStats && selectedPartner && (
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300"
+                    onClick={(e) => { if (e.target === e.currentTarget) setOpenStats(false); }}
+                >
+                    <div className="w-full max-w-xl bg-black/95 backdrop-blur-xl rounded-[24px] p-6 border-2 border-primary/20 shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-1">{selectedPartner.name} - Performance</h3>
+                                <p className="text-sm text-white/60">Live B2B statistics, students, and wallet balance.</p>
+                            </div>
+                            <button onClick={() => setOpenStats(false)} className="text-white/40 hover:text-white transition-colors">
+                                <Plus size={24} className="rotate-45" />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="p-4 bg-white/5 border border-white/10 rounded-xl relative overflow-hidden group">
+                                <Users size={24} className="text-primary mb-2" />
+                                <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-1">Enrolled Students</p>
+                                <p className="text-2xl font-black text-white">{partnerStats?.studentsCount || 0}</p>
+                            </div>
+                            <div className="p-4 bg-white/5 border border-white/10 rounded-xl relative overflow-hidden group">
+                                <Ticket size={24} className="text-pink-400 mb-2" />
+                                <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-1">Total Discount Codes</p>
+                                <p className="text-2xl font-black text-white">{partnerStats?.totalCodes || 0}</p>
+                            </div>
+                            <div className="p-4 bg-white/5 border border-amber-500/20 rounded-xl relative overflow-hidden group">
+                                <Wallet size={24} className="text-amber-400 mb-2" />
+                                <p className="text-xs font-bold text-amber-500/50 uppercase tracking-widest mb-1">Pending Payouts</p>
+                                <p className="text-2xl font-black text-amber-400">${partnerStats?.pendingPayouts?.toLocaleString() || 0}</p>
+                            </div>
+                            <div className="p-4 bg-white/5 border border-emerald-500/20 rounded-xl relative overflow-hidden group">
+                                <DollarSign size={24} className="text-emerald-400 mb-2" />
+                                <p className="text-xs font-bold text-emerald-500/50 uppercase tracking-widest mb-1">Total Earned (Approved)</p>
+                                <p className="text-2xl font-black text-emerald-400">${partnerStats?.totalEarnings?.toLocaleString() || 0}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Manage Discount Dialog */}
             {openDiscount && (

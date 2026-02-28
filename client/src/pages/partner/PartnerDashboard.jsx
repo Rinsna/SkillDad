@@ -159,21 +159,7 @@ const PartnerDashboard = () => {
         }
     };
 
-    const handleCreateCode = async (e) => {
-        e.preventDefault();
-        const codeInput = e.target.elements.code.value.toUpperCase();
-        const valueInput = e.target.elements.value.value;
-        try {
-            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-            const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            await axios.post('/api/partner/discounts', { code: codeInput, value: Number(valueInput), type: 'percentage' }, config);
-            alert('Discount code successfully created! You can now register students with it.');
-            e.target.reset();
-            fetchStats();
-        } catch (error) {
-            alert(error.response?.data?.message || 'Failed to create discount code.');
-        }
-    };
+
 
     const generateEnrollmentLink = (courseId = 'general') => {
         const baseUrl = window.location.origin;
@@ -592,48 +578,12 @@ const PartnerDashboard = () => {
                         exit={{ opacity: 0, y: -20 }}
                         className="space-y-6"
                     >
-                        {/* Create New Code */}
-                        <GlassCard>
-                            <h2 className="text-base font-bold text-white font-poppins mb-6 flex items-center">
-                                <Plus size={18} className="mr-2 text-primary" /> Create New Discount / Affiliation Code
-                            </h2>
-                            <form onSubmit={handleCreateCode} className="grid md:grid-cols-3 gap-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-white mb-2">Code Name (e.g. SKILL50)</label>
-                                    <input
-                                        type="text"
-                                        name="code"
-                                        required
-                                        placeholder="Enter UNIQUE code"
-                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-white mb-2">Discount Percentage (%)</label>
-                                    <input
-                                        type="number"
-                                        name="value"
-                                        required
-                                        min="1"
-                                        max="100"
-                                        placeholder="10"
-                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary"
-                                    />
-                                </div>
-                                <div className="flex items-end">
-                                    <ModernButton type="submit" className="w-full py-3">
-                                        <Plus size={18} className="mr-2" />
-                                        Create Real Code
-                                    </ModernButton>
-                                </div>
-                            </form>
-                        </GlassCard>
-
                         {/* Existing Codes */}
                         <GlassCard>
                             <h2 className="text-base font-bold text-white font-poppins mb-6 flex items-center">
-                                <Ticket size={18} className="mr-2 text-primary" /> Active Discount Codes
+                                <Ticket size={18} className="mr-2 text-primary" /> Admin-Assigned Affiliation Codes
                             </h2>
+                            <p className="text-sm text-white/60 mb-6">These affiliation codes have been permanently securely assigned to your account by the SkillDad Administrator.</p>
                             <div className="space-y-4">
                                 {discountCodes.map((code, index) => (
                                     <div key={index} className="p-4 bg-white/5 rounded-xl border border-white/10">
