@@ -79,6 +79,10 @@ const PartnerStudentManagement = () => {
                 showToast('Please fill all required fields', 'warning');
                 return;
             }
+            if (!newStudentData.partnerCode) {
+                showToast('You must select an affiliation code! Please generate one in Commission & Wallet first if empty.', 'warning');
+                return;
+            }
 
             await axios.post('/api/partner/register-student', newStudentData, config);
 

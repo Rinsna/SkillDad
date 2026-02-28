@@ -130,12 +130,13 @@ const registerStudent = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Verify the partnerCode belongs to this partner
-        if (partnerCode) {
-            const discount = await Discount.findOne({ code: partnerCode.toUpperCase(), partner: req.user.id });
-            if (!discount) {
-                return res.status(400).json({ message: 'Invalid partner code for this account' });
-            }
+        if (!partnerCode) {
+            return res.status(400).json({ message: 'Affiliation code is required to register a student under your network.' });
+        }
+
+        const discount = await Discount.findOne({ code: partnerCode.toUpperCase(), partner: req.user.id });
+        if (!discount) {
+            return res.status(400).json({ message: 'Invalid or unauthorized affiliation code for this account.' });
         }
 
         const student = await User.create({
