@@ -112,7 +112,7 @@ const CommissionWallet = () => {
                 {/* Commission Claims Form */}
                 <GlassCard className="col-span-full lg:col-span-2">
                     <h3 className="font-bold text-white mb-6 flex items-center">
-                        <Calculate className="mr-2 text-emerald-400" size={20} />
+                        <Calculator className="mr-2 text-emerald-400" size={20} />
                         Claim Commission
                     </h3>
                     <form onSubmit={handleRequestCommission} className="space-y-6">
