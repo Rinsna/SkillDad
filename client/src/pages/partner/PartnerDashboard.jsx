@@ -35,6 +35,7 @@ import {
     Clock,
     CheckCircle,
     AlertCircle,
+    Plus,
     XCircle
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
