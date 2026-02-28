@@ -267,18 +267,26 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
                                         required
                                         value={form.courseId || form.category}
                                         onChange={handleCourseChange}
-                                        className={`${inputCls} pl-10 cursor-pointer`}
+                                        className={`${inputCls} pl-10 cursor-pointer text-white`}
                                     >
                                         <option value="" className="bg-slate-900">University-wide (All Students)</option>
-                                        {Array.isArray(courses) && courses.length > 0 ? (
-                                            courses.map(c => (
-                                                <option key={c._id} value={c._id} className="bg-slate-900">{c.title}</option>
-                                            ))
-                                        ) : (
-                                            ['Computer Science', 'Business', 'Engineering', 'Data Science', 'Design', 'AI & ML', 'Security', 'Finance', 'General'].map(cat => (
-                                                <option key={cat} value={cat} className="bg-slate-900">{cat}</option>
-                                            ))
+
+                                        {/* Show groups of options for better UX */}
+                                        {Array.isArray(courses) && courses.length > 0 && (
+                                            <optgroup label="University Courses" className="bg-slate-900 text-primary font-bold">
+                                                {courses.map(c => (
+                                                    <option key={c._id} value={c._id} className="bg-slate-900 text-white">
+                                                        {c.title}
+                                                    </option>
+                                                ))}
+                                            </optgroup>
                                         )}
+
+                                        <optgroup label="General Categories" className="bg-slate-900 text-white/50">
+                                            {['Computer Science', 'Business', 'Engineering', 'Data Science', 'Design', 'AI & ML', 'Security', 'Finance', 'General'].map(cat => (
+                                                <option key={cat} value={cat} className="bg-slate-900 text-white">{cat}</option>
+                                            ))}
+                                        </optgroup>
                                     </select>
                                 </div>
                             </div>
