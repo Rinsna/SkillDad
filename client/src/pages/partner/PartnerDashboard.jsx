@@ -423,12 +423,12 @@ const PartnerDashboard = () => {
                                     <select
                                         value={filterStatus}
                                         onChange={(e) => setFilterStatus(e.target.value)}
-                                        className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary/50 transition-all font-bold"
+                                        className="px-4 py-3 bg-[#0B0F1A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary/50 transition-all font-bold"
                                     >
-                                        <option value="all">All Status</option>
-                                        <option value="active">Active</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="inactive">Inactive</option>
+                                        <option value="all" className="bg-[#0B0F1A]">All Status</option>
+                                        <option value="active" className="bg-[#0B0F1A]">Active</option>
+                                        <option value="completed" className="bg-[#0B0F1A]">Completed</option>
+                                        <option value="inactive" className="bg-[#0B0F1A]">Inactive</option>
                                     </select>
                                     <Filter size={20} className="text-white" />
                                 </div>
