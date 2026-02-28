@@ -125,24 +125,33 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
         duration: 60,
     });
 
+    const handleCourseChange = (e) => {
+        const val = e.target.value;
+        if (val.length === 24) {
+            const course = courses.find(c => c._id === val);
+            setForm(prev => ({
+                ...prev,
+                courseId: val,
+                category: course ? course.category : prev.category
+            }));
+        } else {
+            setForm(prev => ({
+                ...prev,
+                courseId: '',
+                category: val || 'General'
+            }));
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'courseId') return;
         setForm(prev => {
             const updated = { ...prev, [name]: value };
-
-            // If course is selected, auto-set the category
-            if (name === 'courseId' && value) {
-                const selectedCourse = courses.find(c => c._id === value);
-                if (selectedCourse) {
-                    updated.category = selectedCourse.category || 'General';
-                }
-            }
-
-            // Keep a combined startTime for submission
             if (name === 'startDate' || name === 'startHour') {
                 const d = name === 'startDate' ? value : updated.startDate;
-                const t = name === 'startHour' ? value : updated.startHour;
-                updated.startTime = d && t ? `${d}T${t}` : '';
+                const h = name === 'startHour' ? value : updated.startHour;
+                updated.startTime = d && h ? `${d}T${h}` : '';
             }
             return updated;
         });
@@ -256,14 +265,20 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
                                     <select
                                         name="courseId"
                                         required
-                                        value={form.courseId}
-                                        onChange={handleChange}
-                                        className={`${inputCls} pl-10 appearance-none cursor-pointer`}
+                                        value={form.courseId || form.category}
+                                        onChange={handleCourseChange}
+                                        className={`${inputCls} pl-10 cursor-pointer`}
                                     >
                                         <option value="" className="bg-slate-900">University-wide (All Students)</option>
-                                        {courses.map(c => (
-                                            <option key={c._id} value={c._id} className="bg-slate-900">{c.title}</option>
-                                        ))}
+                                        {Array.isArray(courses) && courses.length > 0 ? (
+                                            courses.map(c => (
+                                                <option key={c._id} value={c._id} className="bg-slate-900">{c.title}</option>
+                                            ))
+                                        ) : (
+                                            ['Computer Science', 'Business', 'Engineering', 'Data Science', 'Design', 'AI & ML', 'Security', 'Finance', 'General'].map(cat => (
+                                                <option key={cat} value={cat} className="bg-slate-900">{cat}</option>
+                                            ))
+                                        )}
                                     </select>
                                 </div>
                             </div>
@@ -326,7 +341,7 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
 
                         {/* Meeting Link */}
                         <div>
-                            <label className={labelCls}>Meeting Link (Zoom / Google Meet / etc.)</label>
+                            <label className={labelCls}>Meeting Link (Optional - Zoom created automatically)</label>
                             <div className="relative group">
                                 <Link size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-primary transition-colors pointer-events-none" />
                                 <input
@@ -397,9 +412,9 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
 const LiveSessionsHub = () => {
     const navigate = useNavigate();
     // ✅ Seed with demo data immediately — NEVER show a blank/loading screen
-    const [liveSessions, setLiveSessions] = useState(() => DEMO_SESSIONS.map(formatSession));
+    const [liveSessions, setLiveSessions] = useState([]); // Start empty
     const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Indicate loading initially
     const [showModal, setShowModal] = useState(false);
     const [notifyingId, setNotifyingId] = useState(null);
     const [toasts, setToasts] = useState([]);
@@ -426,11 +441,15 @@ const LiveSessionsHub = () => {
             const config = getAuthConfig(15000);
             if (!config) return;
             const { data } = await axios.get('/api/sessions', config);
-            if (Array.isArray(data) && data.length > 0) {
+            if (Array.isArray(data)) {
                 setLiveSessions(data.map(formatSession));
             }
         } catch (err) {
             console.warn('[LiveSessionsHub] background fetch sessions failed:', err.message);
+            // Fallback to demo data ONLY if fetch fails completely and we have nothing
+            setLiveSessions(DEMO_SESSIONS.map(formatSession));
+        } finally {
+            setLoading(false);
         }
     }, []);
 

@@ -128,6 +128,7 @@ const COURSE_CATEGORIES = [
 const ScheduleModal = ({ onClose, onCreated, students }) => {
     const [form, setForm] = useState({
         topic: '', description: '', category: 'Computer Science',
+        courseId: '',
         startDate: '', startHour: '', startTime: '',
         duration: 60, timezone: 'Asia/Kolkata',
         enrolledStudents: [], meetingLink: '',
@@ -135,26 +136,53 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
     });
     const [universities, setUniversities] = useState([]);
     const [instructors, setInstructors] = useState([]);
+    const [courses, setCourses] = useState([]);
 
     useEffect(() => {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        if (userInfo && userInfo.role === 'admin') {
+        if (userInfo) {
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            axios.get('/api/admin/universities', config)
-                .then(res => setUniversities(res.data))
-                .catch(err => console.error('Error fetching universities:', err));
 
-            axios.get('/api/admin/users/all', config)
-                .then(res => {
-                    const nonStudents = res.data.users.filter(u => u.role !== 'student');
-                    setInstructors(nonStudents);
-                })
-                .catch(err => console.error('Error fetching instructors:', err));
+            // Fetch courses
+            axios.get('/api/courses/admin', config)
+                .then(res => setCourses(res.data))
+                .catch(err => console.error('Error fetching courses:', err));
+
+            if (userInfo.role === 'admin') {
+                axios.get('/api/admin/universities', config)
+                    .then(res => setUniversities(res.data))
+                    .catch(err => console.error('Error fetching universities:', err));
+
+                axios.get('/api/admin/users/all', config)
+                    .then(res => {
+                        const nonStudents = res.data.users.filter(u => u.role !== 'student');
+                        setInstructors(nonStudents);
+                    })
+                    .catch(err => console.error('Error fetching instructors:', err));
+            }
         }
     }, []);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [notifyOnCreate, setNotifyOnCreate] = useState(true);
+
+    const handleCourseChange = (e) => {
+        const val = e.target.value;
+        if (val.length === 24) {
+            const course = (courses || []).find(c => c._id === val);
+            setForm(prev => ({
+                ...prev,
+                courseId: val,
+                category: course ? course.category : prev.category
+            }));
+        } else {
+            setForm(prev => ({
+                ...prev,
+                courseId: '',
+                category: val || 'General'
+            }));
+        }
+    };
 
     const set = (field) => (e) => {
         const value = e.target.value;
@@ -263,15 +291,25 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className={labelCls}>Course / Category *</label>
-                            <select
-                                value={form.category}
-                                onChange={set('category')}
-                                className={inputCls + ' appearance-none cursor-pointer'}
-                            >
-                                {COURSE_CATEGORIES.map(c => (
-                                    <option key={c} value={c} className="bg-slate-900">{c}</option>
-                                ))}
-                            </select>
+                            <div className="relative group">
+                                <BookOpen size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/60 pointer-events-none" />
+                                <select
+                                    value={form.courseId || form.category}
+                                    onChange={handleCourseChange}
+                                    className={inputCls + ' pl-9 cursor-pointer'}
+                                >
+                                    <option value="" className="bg-slate-900">University-wide (All Students)</option>
+                                    {Array.isArray(courses) && courses.length > 0 ? (
+                                        courses.map(c => (
+                                            <option key={c._id} value={c._id} className="bg-slate-900">{c.title}</option>
+                                        ))
+                                    ) : (
+                                        COURSE_CATEGORIES.map(c => (
+                                            <option key={c} value={c} className="bg-slate-900">{c}</option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
                         </div>
                         <div>
                             <label className={labelCls}>Duration (minutes)</label>
@@ -659,8 +697,9 @@ const Toast = ({ msg, type = 'info', onClose }) => {
 /* ── Main LiveSessionsTab component ──────────────────────── */
 const LiveSessionsTab = ({ students }) => {
     // Initialise with demo data so the page is NEVER blank on first render
-    const [sessions, setSessions] = useState(DEMO_SESSIONS);
-    const [loading, setLoading] = useState(false); // no blocking spinner
+    // Initialise empty so we can detect once API responds
+    const [sessions, setSessions] = useState([]);
+    const [loading, setLoading] = useState(true); // Indicate loading initially
     const [loadingId, setLoadingId] = useState(null);
     const [filterStatus, setFilterStatus] = useState('all');
     const [showModal, setShowModal] = useState(false);
@@ -680,13 +719,15 @@ const LiveSessionsTab = ({ students }) => {
                 headers: { Authorization: `Bearer ${token}` },
                 timeout: 15000,
             });
-            if (Array.isArray(data) && data.length > 0) {
+            if (Array.isArray(data)) {
                 setSessions(data);
             }
-            // if empty, keep demo data — don't overwrite with nothing
         } catch (err) {
             console.warn('[LiveSessions] API unavailable, showing demo data:', err.message);
-            // silently keep demo data — no error toast on background load
+            // Fallback to demo data ONLY if fetch fails completely
+            setSessions(DEMO_SESSIONS);
+        } finally {
+            setLoading(false);
         }
     }, []);
 

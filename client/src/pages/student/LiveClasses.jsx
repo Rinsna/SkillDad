@@ -72,7 +72,7 @@ const LiveClasses = () => {
 
     const handleJoin = (session) => {
         if (session.status === 'live') {
-            navigate(`/dashboard/watch/${session._id}`);
+            navigate(`/dashboard/session/${session._id}`);
             return;
         }
 
