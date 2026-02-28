@@ -44,7 +44,7 @@ const ModernSidebar = ({ isOpen, setIsOpen }) => {
                 { name: 'Exams', icon: Trophy, path: '/admin/exams' },
                 { name: 'Users', icon: Users, path: '/admin/users' },
                 { name: 'Students', icon: GraduationCap, path: '/admin/students' },
-                { name: 'University', icon: Building2, path: '/admin/university' },
+                { name: 'Universities', icon: Building2, path: '/admin/university' },
                 { name: 'B2B Partners', icon: Briefcase, path: '/admin/b2b' },
                 { name: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
                 { name: 'Coupons', icon: Ticket, path: '/admin/coupons' },
