@@ -37,14 +37,32 @@ const registerUser = async (req, res) => {
 
         // Public registration ONLY creates student accounts
         // Universities and B2B partners are created by admin only
-        console.log('Creating student user...');
+        let userRole = 'student';
+        let discountRate = 0;
+
+        // Check if admin is creating the user
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            try {
+                const token = req.headers.authorization.split(' ')[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                const creator = await User.findById(decoded.id).select('role');
+                if (creator && creator.role === 'admin') {
+                    userRole = req.body.role || 'student';
+                    discountRate = req.body.discountRate || 0;
+                }
+            } catch (e) {
+                console.error("Token admin check failed:", e.message);
+            }
+        }
+
+        console.log(`Creating user with role: ${userRole}...`);
         const user = await User.create({
             name,
             email,
             password,
-            role: 'student',
+            role: userRole,
             isVerified: true,
-            discountRate: 0,
+            discountRate: discountRate,
             profile: {
                 phone: phone.trim()
             }

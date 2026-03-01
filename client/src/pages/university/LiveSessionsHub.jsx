@@ -202,8 +202,9 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
                     onScheduled(data, localSession._id);
                 })
                 .catch((err) => {
-                    console.warn('[LiveSessions] Backend save failed (session shown locally):', err.message);
-                    onToast('⚠️ Session shown locally but could not be saved to server. Please retry.', 'error');
+                    const serverMsg = err.response?.data?.message;
+                    console.warn('[LiveSessions] Backend save failed (session shown locally):', serverMsg || err.message);
+                    onToast(`⚠️ Failed to save to server: ${serverMsg || 'Please retry.'}`, 'error');
                 });
         }
     };

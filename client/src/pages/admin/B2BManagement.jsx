@@ -50,6 +50,7 @@ const B2BManagement = () => {
         name: '',
         email: '',
         password: '',
+        phone: '',
         role: 'partner',
         discountRate: 0
     });
@@ -182,10 +183,12 @@ const B2BManagement = () => {
 
     const handleOnboardEntity = async () => {
         try {
-            const { data } = await axios.post('/api/users', newEntity);
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+            const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+            const { data } = await axios.post('/api/users', newEntity, config);
             showToast(`Successfully onboarded ${newEntity.name}`, 'success');
             setOpenOnboard(false);
-            setNewEntity({ name: '', email: '', password: '', role: 'partner', discountRate: 0 });
+            setNewEntity({ name: '', email: '', password: '', phone: '', role: 'partner', discountRate: 0 });
             fetchPartners();
         } catch (error) {
             showToast(`Failed to onboard entity: ${error.response?.data?.message || error.message}`, 'error');
@@ -716,7 +719,7 @@ const B2BManagement = () => {
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
                             setOpenOnboard(false);
-                            setNewEntity({ name: '', email: '', password: '', role: 'partner' });
+                            setNewEntity({ name: '', email: '', password: '', phone: '', role: 'partner' });
                         }
                     }}
                 >
@@ -755,6 +758,16 @@ const B2BManagement = () => {
                                 />
                             </div>
                             <div>
+                                <label className="block text-xs font-bold text-white/50 uppercase tracking-widest mb-1.5 font-inter">Phone Number</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-sm text-white placeholder-white/40 focus:outline-none focus:border-primary font-inter"
+                                    placeholder="Enter phone number"
+                                    value={newEntity.phone}
+                                    onChange={(e) => setNewEntity({ ...newEntity, phone: e.target.value })}
+                                />
+                            </div>
+                            <div>
                                 <label className="block text-xs font-bold text-white/50 uppercase tracking-widest mb-1.5 font-inter">Entity Type</label>
                                 <select
                                     className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-sm text-white focus:outline-none focus:border-primary font-inter"
@@ -781,7 +794,7 @@ const B2BManagement = () => {
                             <button
                                 onClick={() => {
                                     setOpenOnboard(false);
-                                    setNewEntity({ name: '', email: '', password: '', role: 'partner', discountRate: 0 });
+                                    setNewEntity({ name: '', email: '', password: '', phone: '', role: 'partner', discountRate: 0 });
                                 }}
                                 className="flex-1 py-2 text-sm font-bold text-white/70 hover:bg-white/5 rounded-lg transition-colors font-inter"
                             >

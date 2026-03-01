@@ -13,9 +13,8 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (user && user.token) {
-            const socketUrl = window.location.hostname === 'localhost'
-                ? (import.meta.env.VITE_SOCKET_URL || 'http://localhost:3030')
-                : window.location.origin;
+            // Point socket.io to the exact backend server URL, NOT Vercel
+            const socketUrl = import.meta.env.VITE_API_URL || 'https://skilldad-server.onrender.com';
 
             const newSocket = io(socketUrl, {
                 auth: {

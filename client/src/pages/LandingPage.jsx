@@ -199,7 +199,7 @@ const LandingPage = () => {
 
                 {/* Row 1 — Scrolls Left */}
                 <div className="relative overflow-hidden whitespace-nowrap mb-6">
-                    <div className="flex animate-scroll will-change-transform" style={{ animationDuration: '30s' }}>
+                    <div className="flex animate-scroll will-change-transform" style={{ animationDuration: '120s' }}>
                         {[...marqueeRow1, ...marqueeRow1].map((company, i) => (
                             <div key={i} className="mx-8 flex items-center space-x-3 group cursor-default">
                                 <div className="w-1.5 h-1.5 rounded-full bg-primary/50 group-hover:bg-primary transition-colors" />
@@ -223,7 +223,7 @@ const LandingPage = () => {
 
                 {/* Row 2 — Scrolls Right */}
                 <div className="relative overflow-hidden whitespace-nowrap">
-                    <div className="flex animate-scroll-reverse will-change-transform" style={{ animationDuration: '35s' }}>
+                    <div className="flex animate-scroll-reverse will-change-transform" style={{ animationDuration: '130s' }}>
                         {[...marqueeRow2, ...marqueeRow2].map((company, i) => (
                             <div key={i} className="mx-8 flex items-center space-x-3 group cursor-default">
                                 <div className="w-1.5 h-1.5 rounded-full bg-purple-400/40 group-hover:bg-purple-400 transition-colors" />

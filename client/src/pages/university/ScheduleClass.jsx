@@ -30,24 +30,31 @@ const ScheduleClass = () => {
             navigate('/login');
             return;
         }
-        
+
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        
-        // Fetch courses for the university
-        axios.get('/api/courses', config)
+
+        // Fetch courses for the university (use admin endpoint to get instructor's own courses)
+        axios.get('/api/courses/admin', config)
             .then(res => {
-                if (Array.isArray(res.data)) {
-                    setCourses(res.data);
-                } else if (res.data.courses && Array.isArray(res.data.courses)) {
-                    setCourses(res.data.courses);
+                const data = res.data;
+                if (Array.isArray(data)) {
+                    setCourses(data);
+                } else if (data.courses && Array.isArray(data.courses)) {
+                    setCourses(data.courses);
                 } else {
-                    console.warn('Unexpected courses response format:', res.data);
+                    console.warn('Unexpected courses response format:', data);
                     setCourses([]);
                 }
             })
             .catch(err => {
                 console.error('Error fetching courses:', err);
-                setCourses([]); // Set empty array on error so page doesn't break
+                // Fallback: try public endpoint
+                axios.get('/api/courses')
+                    .then(res => {
+                        if (Array.isArray(res.data)) setCourses(res.data);
+                        else setCourses([]);
+                    })
+                    .catch(() => setCourses([]));
             });
 
         if (userInfo && userInfo.role === 'admin') {
@@ -247,7 +254,7 @@ const ScheduleClass = () => {
                                     )}
                                 </select>
                                 <p className="text-xs text-white/30 mt-2 ml-1">
-                                    {courses.length > 0 
+                                    {courses.length > 0
                                         ? 'Select a course to only notify enrolled students'
                                         : 'No courses found. Session will be university-wide.'}
                                 </p>

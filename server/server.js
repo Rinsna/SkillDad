@@ -30,7 +30,28 @@ app.use(express.json({
     }
   }
 }));
-app.use(cors());
+// CORS — allow Vercel frontend + localhost dev
+const allowedOrigins = [
+  'https://skill-dad-client.vercel.app',
+  'https://skilldad.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-csrf-token', 'X-CSRF-Token'],
+}));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
@@ -105,15 +126,21 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 
   // Self-ping every 14 minutes to prevent Render free-tier cold starts
-  // Render spins down after 15 minutes of inactivity
-  if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
-    const pingUrl = `${process.env.RENDER_EXTERNAL_URL}/health`;
+  // Render spins down after 15 minutes of inactivity on the free plan
+  if (process.env.NODE_ENV === 'production') {
+    // Use RENDER_EXTERNAL_URL if set, otherwise fall back to the hardcoded Render URL
+    const pingUrl = process.env.RENDER_EXTERNAL_URL
+      ? `${process.env.RENDER_EXTERNAL_URL}/health`
+      : 'https://skilldad-server.onrender.com/health';
+
+    console.log(`[KeepAlive] Starting self-ping every 14 min -> ${pingUrl}`);
+
     setInterval(() => {
       const https = require('https');
       const http = require('http');
       const client = pingUrl.startsWith('https') ? https : http;
       client.get(pingUrl, (res) => {
-        console.log(`[KeepAlive] Ping ${pingUrl} -> ${res.statusCode}`);
+        console.log(`[KeepAlive] Ping -> ${res.statusCode}`);
       }).on('error', (err) => {
         console.warn('[KeepAlive] Ping failed:', err.message);
       });

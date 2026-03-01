@@ -6,7 +6,7 @@ import {
     Clock, Users, Calendar, CheckCircle2,
     AlertCircle, X, RefreshCw, Eye, Trash2,
     Download, ChevronRight, Wifi, WifiOff, ExternalLink,
-    Activity, BarChart3, Film, Link2, Copy, CheckCheck, Send
+    Activity, BarChart3, Film, Link2, Copy, CheckCheck, Send, BookOpen
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import ModernButton from '../../components/ui/ModernButton';
@@ -143,10 +143,20 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
         if (userInfo) {
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
 
-            // Fetch courses
+            // Fetch courses for the university
             axios.get('/api/courses/admin', config)
-                .then(res => setCourses(res.data))
-                .catch(err => console.error('Error fetching courses:', err));
+                .then(res => {
+                    const data = res.data;
+                    if (Array.isArray(data)) setCourses(data);
+                    else if (data.courses && Array.isArray(data.courses)) setCourses(data.courses);
+                    else setCourses([]);
+                })
+                .catch(() => {
+                    // Fallback: try public endpoint
+                    axios.get('/api/courses')
+                        .then(res => { if (Array.isArray(res.data)) setCourses(res.data); })
+                        .catch(() => setCourses([]));
+                });
 
             if (userInfo.role === 'admin') {
                 axios.get('/api/admin/universities', config)
@@ -709,26 +719,41 @@ const LiveSessionsTab = ({ students }) => {
 
     const showToast = (msg, type = 'info') => setToast({ msg, type });
 
-    /* ── Background fetch: silently replace demo data if API responds ── */
-    const fetchSessions = useCallback(async () => {
+    /* ── Background fetch with retry for Render cold starts ── */
+    const fetchSessions = useCallback(async (attempt = 1) => {
+        let retrying = false;
         try {
             const raw = localStorage.getItem('userInfo');
-            if (!raw) return; // stay on demo data
+            if (!raw) { setLoading(false); return; }
             const { token } = JSON.parse(raw);
+
+            // Wake up Render server first (fire and forget)
+            if (attempt === 1) {
+                axios.get('https://skilldad-server.onrender.com/health').catch(() => { });
+            }
+
             const { data } = await axios.get('/api/sessions', {
                 headers: { Authorization: `Bearer ${token}` },
-                timeout: 15000,
+                timeout: 30000, // Important: Render cold start can take long!
             });
             if (Array.isArray(data)) {
                 setSessions(data);
             }
         } catch (err) {
+            const status = err?.response?.status;
+            // Render can take up to ~50s to wake up, so retry up to 6 times (6 * 8s = 48s)
+            if (status === 503 && attempt < 6) {
+                retrying = true;
+                showToast(`Server waking up... retrying (${attempt}/6)`, 'info');
+                setTimeout(() => fetchSessions(attempt + 1), 8000);
+                return;
+            }
             console.warn('[LiveSessions] API unavailable, showing demo data:', err.message);
-            // Fallback to demo data ONLY if fetch fails completely
             setSessions(DEMO_SESSIONS);
         } finally {
-            setLoading(false);
+            if (!retrying) setLoading(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {

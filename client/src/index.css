@@ -345,7 +345,7 @@ table td {
 .animate-scroll {
   display: flex;
   width: max-content;
-  animation: scroll 120s linear infinite;
+  animation: scroll 400s linear infinite;
 }
 
 @keyframes scroll {
@@ -365,7 +365,7 @@ table td {
 .animate-scroll-reverse {
   display: flex;
   width: max-content;
-  animation: scroll-reverse 120s linear infinite;
+  animation: scroll-reverse 400s linear infinite;
 }
 
 @keyframes scroll-reverse {

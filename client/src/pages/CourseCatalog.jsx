@@ -27,36 +27,29 @@ const CourseCatalog = () => {
     const [filter, setFilter] = useState('');
     const [category, setCategory] = useState('All');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const [universityName, setUniversityName] = useState('');
 
     useEffect(() => {
+        // Wake up Render server immediately to avoid 503 cold starts
+        axios.get('https://skilldad-server.onrender.com/health').catch(() => { });
+
         const fetchCourses = async () => {
             try {
-                const { data } = await axios.get('/api/courses');
+                // Check if logged-in user is a university — if so, show only their courses
+                const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+                let url = '/api/courses';
+
+                if (userInfo && userInfo.role === 'university' && userInfo._id) {
+                    // Filter courses by this university's instructor ID
+                    url = `/api/courses?university=${userInfo._id}`;
+                    setUniversityName(userInfo.profile?.universityName || userInfo.name || 'Your University');
+                }
+
+                const { data } = await axios.get(url);
                 if (data && Array.isArray(data) && data.length > 0) {
                     setCourses(data);
                 } else {
-                    console.log('No courses returned from API, using fallback data');
-                    // Fallback to mock data if API is empty
-                    setCourses([
-                        {
-                            _id: 'mock1',
-                            title: 'Complete Web Development Bootcamp 2024',
-                            description: 'Master HTML, CSS, JavaScript, React, Node.js and more.',
-                            thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800',
-                            category: 'Web Development',
-                            price: 99,
-                            instructor: { name: 'Dr. Angela Yu', role: 'university', profile: { universityName: 'London App Brewery' } }
-                        },
-                        {
-                            _id: 'mock2',
-                            title: 'Advanced AI & Machine Learning',
-                            description: 'Learn deep learning, neural networks, and computer vision.',
-                            thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
-                            category: 'Artificial Intelligence',
-                            price: 149,
-                            instructor: { name: 'Prof. Andrew Ng', role: 'university', profile: { universityName: 'Stanford Online' } }
-                        }
-                    ]);
+                    setCourses([]);
                 }
                 setLoading(false);
             } catch (error) {
@@ -111,8 +104,15 @@ const CourseCatalog = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black font-space tracking-[-0.04em] leading-none"
                     >
-                        <span className="text-gray-400">Expand Your</span> <span className="text-white">Horizon</span>
+                        {universityName ? (
+                            <><span className="text-gray-400">Courses by</span> <span className="text-white">{universityName}</span></>
+                        ) : (
+                            <><span className="text-gray-400">Expand Your</span> <span className="text-white">Horizon</span></>
+                        )}
                     </motion.h1>
+                    {universityName && (
+                        <p className="text-white/40 text-sm mt-2">Showing all courses provided by your university</p>
+                    )}
                 </div>
 
                 {/* Controls Section */}

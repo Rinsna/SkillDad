@@ -324,7 +324,7 @@ const HeroSection = () => {
 
             {/* University Ticker */}
             <div className="absolute bottom-4 left-0 right-0 py-5 overflow-hidden whitespace-nowrap z-20">
-                <div className="flex animate-scroll hover:pause will-change-transform" style={{ animationDuration: '45s' }}>
+                <div className="flex animate-scroll hover:pause will-change-transform" style={{ animationDuration: '150s' }}>
                     {[...partners, ...partners, ...partners].map((partner, i) => (
                         <div key={i} className="mx-16 md:mx-28 flex items-center transition-all hover:scale-110 cursor-default">
                             <span className="text-[16px] md:text-[22px] font-black uppercase tracking-[0.3em] text-white hover:text-white font-inter">{partner}</span>
