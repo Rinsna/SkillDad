@@ -270,24 +270,17 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
                                         onChange={handleCourseChange}
                                         className={`${inputCls} pl-10 cursor-pointer text-white`}
                                     >
-                                        <option value="" className="bg-slate-900">University-wide (All Students)</option>
+                                        <option value="" className="bg-[#0B0F1A] text-white">University-wide (All Students)</option>
 
-                                        {/* Show groups of options for better UX */}
-                                        {Array.isArray(courses) && courses.length > 0 && (
-                                            <optgroup label="University Courses" className="bg-slate-900 text-primary font-bold">
-                                                {courses.map(c => (
-                                                    <option key={c._id} value={c._id} className="bg-slate-900 text-white">
-                                                        {c.title}
-                                                    </option>
-                                                ))}
-                                            </optgroup>
+                                        {Array.isArray(courses) && courses.length > 0 ? (
+                                            courses.map(c => (
+                                                <option key={c._id} value={c._id} className="bg-[#0B0F1A] text-white">
+                                                    {c.title}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            <option disabled className="bg-[#0B0F1A] text-white/50">No assigned courses available</option>
                                         )}
-
-                                        <optgroup label="General Categories" className="bg-slate-900 text-white/50">
-                                            {['Computer Science', 'Business', 'Engineering', 'Data Science', 'Design', 'AI & ML', 'Security', 'Finance', 'General'].map(cat => (
-                                                <option key={cat} value={cat} className="bg-slate-900 text-white">{cat}</option>
-                                            ))}
-                                        </optgroup>
                                     </select>
                                 </div>
                             </div>
@@ -300,7 +293,7 @@ const ScheduleModal = ({ onClose, onScheduled, onToast, courses = [] }) => {
                                     className={`${inputCls} appearance-none cursor-pointer`}
                                 >
                                     {DURATIONS.map(d => (
-                                        <option key={d.value} value={d.value} className="bg-slate-900">{d.label}</option>
+                                        <option key={d.value} value={d.value} className="bg-[#0B0F1A] text-white">{d.label}</option>
                                     ))}
                                 </select>
                             </div>

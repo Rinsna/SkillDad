@@ -211,10 +211,10 @@ const ScheduleClass = () => {
                                         onChange={handleChange}
                                         className={`${inputClasses} appearance-none cursor-pointer`}
                                     >
-                                        <option value={30} className="bg-slate-900 text-white">30m</option>
-                                        <option value={60} className="bg-slate-900 text-white">1h</option>
-                                        <option value={90} className="bg-slate-900 text-white">1.5h</option>
-                                        <option value={120} className="bg-slate-900 text-white">2h</option>
+                                        <option value={30} className="bg-[#0B0F1A] text-white">30m</option>
+                                        <option value={60} className="bg-[#0B0F1A] text-white">1h</option>
+                                        <option value={90} className="bg-[#0B0F1A] text-white">1.5h</option>
+                                        <option value={120} className="bg-[#0B0F1A] text-white">2h</option>
                                     </select>
                                 </div>
                                 <div>
@@ -225,10 +225,10 @@ const ScheduleClass = () => {
                                         onChange={handleChange}
                                         className={`${inputClasses} appearance-none cursor-pointer`}
                                     >
-                                        <option value="General" className="bg-slate-900 text-white">General</option>
-                                        <option value="Dev" className="bg-slate-900 text-white">Dev</option>
-                                        <option value="AI" className="bg-slate-900 text-white">AI</option>
-                                        <option value="Design" className="bg-slate-900 text-white">Design</option>
+                                        <option value="General" className="bg-[#0B0F1A] text-white">General</option>
+                                        <option value="Dev" className="bg-[#0B0F1A] text-white">Dev</option>
+                                        <option value="AI" className="bg-[#0B0F1A] text-white">AI</option>
+                                        <option value="Design" className="bg-[#0B0F1A] text-white">Design</option>
                                     </select>
                                 </div>
                             </div>
@@ -242,15 +242,15 @@ const ScheduleClass = () => {
                                     onChange={handleChange}
                                     className={`${inputClasses} appearance-none cursor-pointer`}
                                 >
-                                    <option value="" className="bg-slate-900 text-white italic">All Students (University-wide)</option>
+                                    <option value="" className="bg-[#0B0F1A] text-white italic">All Students (University-wide)</option>
                                     {courses.length > 0 ? (
                                         courses.map(c => (
-                                            <option key={c._id} value={c._id} className="bg-slate-900 text-white">
+                                            <option key={c._id} value={c._id} className="bg-[#0B0F1A] text-white">
                                                 {c.title}
                                             </option>
                                         ))
                                     ) : (
-                                        <option disabled className="bg-slate-900 text-white/50">No courses available</option>
+                                        <option disabled className="bg-[#0B0F1A] text-white/50">No courses available</option>
                                     )}
                                 </select>
                                 <p className="text-xs text-white/30 mt-2 ml-1">
@@ -270,9 +270,9 @@ const ScheduleClass = () => {
                                             onChange={handleChange}
                                             className={`${inputClasses} appearance-none cursor-pointer`}
                                         >
-                                            <option value="" className="bg-slate-900 text-white italic">None - Manual Only</option>
+                                            <option value="" className="bg-[#0B0F1A] text-white italic">None - Manual Only</option>
                                             {universities.map(u => (
-                                                <option key={u._id} value={u._id} className="bg-slate-900 text-white">
+                                                <option key={u._id} value={u._id} className="bg-[#0B0F1A] text-white">
                                                     {u.profile?.universityName || u.name}
                                                 </option>
                                             ))}
@@ -286,9 +286,9 @@ const ScheduleClass = () => {
                                             onChange={handleChange}
                                             className={`${inputClasses} appearance-none cursor-pointer`}
                                         >
-                                            <option value="" className="bg-slate-900 text-white italic">Select Instructor</option>
+                                            <option value="" className="bg-[#0B0F1A] text-white italic">Select Instructor</option>
                                             {instructors.map(i => (
-                                                <option key={i._id} value={i._id} className="bg-slate-900 text-white">
+                                                <option key={i._id} value={i._id} className="bg-[#0B0F1A] text-white">
                                                     {i.profile?.universityName || i.name} ({i.role})
                                                 </option>
                                             ))}

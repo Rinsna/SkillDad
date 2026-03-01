@@ -120,10 +120,7 @@ const HostLinkModal = ({ data, onClose }) => {
     );
 };
 
-const COURSE_CATEGORIES = [
-    'Computer Science', 'Business', 'Engineering',
-    'Data Science', 'Design', 'AI & ML', 'Security', 'Finance', 'General'
-];
+
 
 const ScheduleModal = ({ onClose, onCreated, students }) => {
     const [form, setForm] = useState({
@@ -308,15 +305,13 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
                                     onChange={handleCourseChange}
                                     className={inputCls + ' pl-9 cursor-pointer'}
                                 >
-                                    <option value="" className="bg-slate-900">University-wide (All Students)</option>
+                                    <option value="" className="bg-[#0B0F1A] text-white">University-wide (All Students)</option>
                                     {Array.isArray(courses) && courses.length > 0 ? (
                                         courses.map(c => (
-                                            <option key={c._id} value={c._id} className="bg-slate-900">{c.title}</option>
+                                            <option key={c._id} value={c._id} className="bg-[#0B0F1A] text-white">{c.title}</option>
                                         ))
                                     ) : (
-                                        COURSE_CATEGORIES.map(c => (
-                                            <option key={c} value={c} className="bg-slate-900">{c}</option>
-                                        ))
+                                        <option disabled className="bg-[#0B0F1A] text-white/50">No assigned courses available</option>
                                     )}
                                 </select>
                             </div>
@@ -329,7 +324,7 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
                                 className={inputCls + ' appearance-none cursor-pointer'}
                             >
                                 {[30, 45, 60, 90, 120, 180].map(d => (
-                                    <option key={d} value={d} className="bg-slate-900">
+                                    <option key={d} value={d} className="bg-[#0B0F1A] text-white">
                                         {d < 60 ? `${d} min` : `${d / 60}h${d % 60 ? ` ${d % 60}m` : ''}`}
                                     </option>
                                 ))}
@@ -408,9 +403,9 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
                                     onChange={set('universityId')}
                                     className={inputCls + ' appearance-none cursor-pointer'}
                                 >
-                                    <option value="" className="bg-slate-900 italic">None - Manual Only</option>
+                                    <option value="" className="bg-[#0B0F1A] text-white italic">None - Manual Only</option>
                                     {universities.map(u => (
-                                        <option key={u._id} value={u._id} className="bg-slate-900">
+                                        <option key={u._id} value={u._id} className="bg-[#0B0F1A] text-white">
                                             {u.profile?.universityName || u.name}
                                         </option>
                                     ))}
@@ -423,9 +418,9 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
                                     onChange={set('instructor')}
                                     className={inputCls + ' appearance-none cursor-pointer'}
                                 >
-                                    <option value="" className="bg-slate-900 italic">Select Instructor</option>
+                                    <option value="" className="bg-[#0B0F1A] text-white italic">Select Instructor</option>
                                     {instructors.map(i => (
-                                        <option key={i._id} value={i._id} className="bg-slate-900">
+                                        <option key={i._id} value={i._id} className="bg-[#0B0F1A] text-white">
                                             {i.name} ({i.role})
                                         </option>
                                     ))}
