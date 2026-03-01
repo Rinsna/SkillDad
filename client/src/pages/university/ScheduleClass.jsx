@@ -48,13 +48,7 @@ const ScheduleClass = () => {
             })
             .catch(err => {
                 console.error('Error fetching courses:', err);
-                // Fallback: try public endpoint
-                axios.get('/api/courses')
-                    .then(res => {
-                        if (Array.isArray(res.data)) setCourses(res.data);
-                        else setCourses([]);
-                    })
-                    .catch(() => setCourses([]));
+                setCourses([]);
             });
 
         if (userInfo && userInfo.role === 'admin') {

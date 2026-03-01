@@ -149,10 +149,7 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
                     else setCourses([]);
                 })
                 .catch(() => {
-                    // Fallback: try public endpoint
-                    axios.get('/api/courses')
-                        .then(res => { if (Array.isArray(res.data)) setCourses(res.data); })
-                        .catch(() => setCourses([]));
+                    setCourses([]);
                 });
 
             if (userInfo.role === 'admin') {
