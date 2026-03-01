@@ -402,9 +402,9 @@ const UniversityDashboard = () => {
                                     onChange={(e) => setFilterCourse(e.target.value)}
                                     className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary max-w-[200px]"
                                 >
-                                    <option value="all" className="bg-slate-900">All Courses</option>
+                                    <option value="all" className="bg-[#0B0F1A] text-white">All Courses</option>
                                     {courses.map(course => (
-                                        <option key={course._id || course} value={course.title || course} className="bg-slate-900">{course.title || course}</option>
+                                        <option key={course._id || course} value={course.title || course} className="bg-[#0B0F1A] text-white">{course.title || course}</option>
                                     ))}
                                 </select>
                                 <ModernButton variant="secondary" onClick={() => navigate('/university/groups')}>
@@ -586,9 +586,9 @@ const UniversityDashboard = () => {
                                         onChange={(e) => setSelectedStudentId(e.target.value)}
                                         className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary appearance-none text-sm min-w-[200px]"
                                     >
-                                        <option value="all" className="bg-slate-900">All Students (Aggregate)</option>
+                                        <option value="all" className="bg-[#0B0F1A] text-white">All Students (Aggregate)</option>
                                         {students.map(s => (
-                                            <option key={s._id || s.id} value={s._id || s.id} className="bg-slate-900">{s.name}</option>
+                                            <option key={s._id || s.id} value={s._id || s.id} className="bg-[#0B0F1A] text-white">{s.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -856,9 +856,9 @@ const UniversityDashboard = () => {
                                         onChange={(e) => setNewStudentData({ ...newStudentData, course: e.target.value })}
                                         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary appearance-none"
                                     >
-                                        <option value="" className="bg-slate-900">Select Course</option>
+                                        <option value="" className="bg-[#0B0F1A] text-white">Select Course</option>
                                         {courses.map(course => (
-                                            <option key={course._id || course} value={course.title || course} className="bg-slate-900">{course.title || course}</option>
+                                            <option key={course._id || course} value={course.title || course} className="bg-[#0B0F1A] text-white">{course.title || course}</option>
                                         ))}
                                     </select>
                                 </div>
