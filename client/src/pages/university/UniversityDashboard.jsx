@@ -51,6 +51,7 @@ const UniversityDashboard = () => {
     const [students, setStudents] = useState([]);
     const [liveSessions, setLiveSessions] = useState([]);
     const [analytics, setAnalytics] = useState({});
+    const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('students');
     const [searchTerm, setSearchTerm] = useState('');
@@ -87,7 +88,6 @@ const UniversityDashboard = () => {
         { id: '8', name: 'Hannah Baker', email: 'hannah@uni.edu', course: 'Business', progress: 95, enrollmentDate: '2023-08-15', phone: '+1 234 567 897', documents: ['Transcript'], avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hannah' }
     ];
 
-    const courses = ['Computer Science', 'Business', 'Engineering', 'Data Science', 'Design'];
 
     const mockLiveSessions = [
         { id: 1, title: 'Intro to React Hooks', course: 'Computer Science', status: 'scheduled', date: '2023-11-20', time: '10:00 AM', duration: '1h', instructor: 'Dr. Smith', enrolledStudents: 45, description: 'Learn the essentials of React hooks including useState and useEffect.' },
@@ -154,11 +154,12 @@ const UniversityDashboard = () => {
                 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
 
-                const [statsRes, studentsRes, sessionsRes, docsRes] = await Promise.all([
+                const [statsRes, studentsRes, sessionsRes, docsRes, coursesRes] = await Promise.all([
                     axios.get('/api/university/stats', config).catch(() => ({ data: { studentCount: 0, groupCount: 0, liveSessions: 0, avgScore: 0 } })),
                     axios.get('/api/users', { ...config, params: { role: 'student', universityId: userInfo._id || userInfo.id } }).catch(() => ({ data: mockStudents })),
                     axios.get('/api/sessions', config).catch(() => ({ data: mockLiveSessions })),
-                    axios.get('/api/documents', config).catch(() => ({ data: [] }))
+                    axios.get('/api/documents', config).catch(() => ({ data: [] })),
+                    axios.get('/api/courses/admin', config).catch(() => ({ data: [] }))
                 ]);
 
                 setStats(statsRes.data || { studentCount: 0, groupCount: 0, liveSessions: 0, avgScore: 0 });
@@ -167,6 +168,7 @@ const UniversityDashboard = () => {
                 const sessionData = Array.isArray(sessionsRes.data) ? sessionsRes.data : [];
                 setLiveSessions(sessionData.length > 0 ? sessionData : mockLiveSessions);
                 setReceivedDocuments(Array.isArray(docsRes.data) ? docsRes.data : []);
+                setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
                 setAnalytics(mockAnalytics);
                 setLoading(false);
             } catch (err) {
@@ -346,9 +348,10 @@ const UniversityDashboard = () => {
             {/* Tab Navigation */}
             {!location.pathname.includes('analytics') && (
                 <div className="flex justify-center mb-8">
-                    <div className="flex space-x-1 bg-white/5 p-1 rounded-full w-fit mx-auto backdrop-blur-md border border-white/10">
+                    <div className="flex space-x-1 bg-white/5 p-1 rounded-full w-fit mx-auto backdrop-blur-md border border-white/10 flex-wrap justify-center">
                         {[
                             { id: 'students', label: 'Student Management', icon: Users },
+                            { id: 'courses', label: 'Our Courses', icon: BookOpen },
                             { id: 'sessions', label: 'Live Sessions', icon: Video },
                             { id: 'assets', label: 'Secure Assets', icon: ShieldCheck },
                             { id: 'analytics', label: 'Analytics', icon: TrendingUp }
@@ -397,11 +400,11 @@ const UniversityDashboard = () => {
                                 <select
                                     value={filterCourse}
                                     onChange={(e) => setFilterCourse(e.target.value)}
-                                    className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary"
+                                    className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary max-w-[200px]"
                                 >
-                                    <option value="all">All Courses</option>
+                                    <option value="all" className="bg-slate-900">All Courses</option>
                                     {courses.map(course => (
-                                        <option key={course} value={course}>{course}</option>
+                                        <option key={course._id || course} value={course.title || course} className="bg-slate-900">{course.title || course}</option>
                                     ))}
                                 </select>
                                 <ModernButton variant="secondary" onClick={() => navigate('/university/groups')}>
@@ -500,6 +503,64 @@ const UniversityDashboard = () => {
                                     </div>
                                 </GlassCard>
                             ))}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'courses' && (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h2 className="text-xl font-semibold text-white">Courses We Provide</h2>
+                                <p className="text-white/40 text-sm">Manage courses assigned to your institution and view enrolled students.</p>
+                            </div>
+                        </div>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {courses.length > 0 ? courses.map((course) => (
+                                <GlassCard key={course._id || course} className="p-5 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform overflow-hidden">
+                                                {course.thumbnail ? (
+                                                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                                                ) : <BookOpen size={24} />}
+                                            </div>
+                                            <span className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] font-bold text-white/50 tracking-wider">
+                                                {course.category || 'Course'}
+                                            </span>
+                                        </div>
+                                        <h3 className="font-bold text-white text-lg mb-2 line-clamp-2">{course.title || course}</h3>
+                                        <p className="text-sm text-white/50 line-clamp-2 mb-4">
+                                            {course.description || 'View detailed curriculum and enrolled students for this course.'}
+                                        </p>
+                                    </div>
+                                    <div className="pt-4 mt-auto border-t border-white/10 flex justify-between items-center">
+                                        <div className="flex items-center gap-2 text-white/60">
+                                            <Users size={16} />
+                                            <span className="text-sm font-medium">
+                                                {students.filter(s => s.course === course.title).length} Enrolled
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setFilterCourse(course.title || course);
+                                                setActiveTab('students');
+                                            }}
+                                            className="px-3 py-1.5 bg-primary/20 text-primary hover:bg-primary/30 rounded-lg text-xs font-bold transition-colors"
+                                        >
+                                            View Students
+                                        </button>
+                                    </div>
+                                </GlassCard>
+                            )) : (
+                                <div className="col-span-full py-16 text-center bg-white/5 rounded-2xl border border-white/10">
+                                    <BookOpen size={48} className="mx-auto text-white/20 mb-4" />
+                                    <h3 className="text-lg font-bold text-white/70 mb-2">No Courses Assigned</h3>
+                                    <p className="text-white/40 text-sm max-w-md mx-auto">
+                                        Your institution has not been assigned any courses yet. Please contact the SkillDad administration.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -795,8 +856,9 @@ const UniversityDashboard = () => {
                                         onChange={(e) => setNewStudentData({ ...newStudentData, course: e.target.value })}
                                         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary appearance-none"
                                     >
+                                        <option value="" className="bg-slate-900">Select Course</option>
                                         {courses.map(course => (
-                                            <option key={course} value={course} className="bg-slate-900">{course}</option>
+                                            <option key={course._id || course} value={course.title || course} className="bg-slate-900">{course.title || course}</option>
                                         ))}
                                     </select>
                                 </div>
