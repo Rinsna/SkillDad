@@ -13,7 +13,8 @@ import {
     BarChart3,
     Edit3,
     FileText,
-    Upload
+    Upload,
+    BookOpen
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -62,6 +63,12 @@ const UniversityManagement = () => {
         type: 'exam_paper',
         file: null
     });
+
+    // Courses Selection Logic
+    const [allCourses, setAllCourses] = useState([]);
+    const [openCoursesModal, setOpenCoursesModal] = useState(false);
+    const [selectedCourses, setSelectedCourses] = useState([]);
+
     const { showToast } = useToast();
 
     const roiData = [
@@ -88,19 +95,26 @@ const UniversityManagement = () => {
             const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
             if (!userInfo?.token) return;
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.get('/api/admin/users/all', config);
-            const institutional = (data.users || []).filter(u => {
-                const role = u.role?.toLowerCase();
-                return role === 'university';
-            });
-            setPartners(institutional);
+            // Now fetches from Universities directly, populating assignedCourses
+            const { data } = await axios.get('/api/admin/universities', config);
+            setPartners(data);
         } catch (error) {
             console.error('Error fetching partners:', error.response?.data || error.message);
         }
     };
 
+    const fetchCourses = async () => {
+        try {
+            const { data } = await axios.get('/api/courses');
+            setAllCourses(data);
+        } catch (error) {
+            console.error('Error loading courses:', error);
+        }
+    };
+
     useEffect(() => {
         fetchPartners();
+        fetchCourses();
         // Auto-refresh every 30 seconds to get latest updates
         const interval = setInterval(() => {
             fetchPartners();
@@ -195,14 +209,42 @@ const UniversityManagement = () => {
         p.email?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleRapidAssign = (course) => {
-        setSelectedCourse(course);
-        setOpenAssign(true);
+    const handleManageCourses = (partner) => {
+        setSelectedPartner(partner);
+        // Pre-fill selected courses from partner's assignedCourses
+        if (partner.assignedCourses && Array.isArray(partner.assignedCourses)) {
+            setSelectedCourses(partner.assignedCourses.map(c => typeof c === 'object' ? c._id : c));
+        } else {
+            setSelectedCourses([]);
+        }
+        setOpenCoursesModal(true);
     };
 
-    const confirmAssignment = (partnerName) => {
-        showToast(`Assigned ${selectedCourse} curriculum to ${partnerName}`, 'success');
-        setOpenAssign(false);
+    const confirmCourseAssignment = async () => {
+        setLoading(true);
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+            const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+
+            await axios.put(`/api/admin/universities/${selectedPartner._id}/courses`, { courses: selectedCourses }, config);
+            showToast(`Courses updated for ${selectedPartner.name}`, 'success');
+            setOpenCoursesModal(false);
+            fetchPartners(); // Refresh list to get updated populated array
+        } catch (error) {
+            showToast(error.response?.data?.message || 'Failed to assign courses', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleCourseSelection = (courseId) => {
+        setSelectedCourses(prev => {
+            if (prev.includes(courseId)) {
+                return prev.filter(id => id !== courseId);
+            } else {
+                return [...prev, courseId];
+            }
+        });
     };
 
     const handleSendDocument = async (e) => {
@@ -473,6 +515,16 @@ const UniversityManagement = () => {
                                         </button>
                                     </td>
                                     <td className="px-6 py-4 text-right space-x-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleManageCourses(partner);
+                                            }}
+                                            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/40 hover:text-emerald-400"
+                                            title="Manage Assigned Courses"
+                                        >
+                                            <BookOpen size={18} />
+                                        </button>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -794,6 +846,58 @@ const UniversityManagement = () => {
                             </button>
                         </GlassCard>
                     </div >
+                )
+            }
+
+            {/* Assign Courses Modal */}
+            {
+                openCoursesModal && (
+                    <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto" onClick={() => setOpenCoursesModal(false)}>
+                        <GlassCard className="w-full max-w-md bg-black/95 border-white/20 my-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+                            <h3 className="text-lg font-semibold text-white font-inter mb-2">Manage Assigned Courses</h3>
+                            <p className="text-sm text-white/60 mb-6 font-inter underline decoration-primary decoration-2 underline-offset-4">
+                                Target: {selectedPartner?.name}
+                            </p>
+
+                            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                {allCourses.length > 0 ? allCourses.map(course => {
+                                    const isSelected = selectedCourses.includes(course._id);
+                                    return (
+                                        <button
+                                            key={course._id}
+                                            onClick={() => toggleCourseSelection(course._id)}
+                                            className={`w-full p-3 rounded-xl text-left text-sm transition-all flex items-center justify-between group ${isSelected ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-400' : 'bg-white/5 border border-white/10 hover:bg-white/10 text-white'}`}
+                                        >
+                                            <span className="font-medium line-clamp-1">{course.title}</span>
+                                            {isSelected ? (
+                                                <ShieldCheck size={16} className="text-emerald-400 shrink-0 ml-2" />
+                                            ) : (
+                                                <Plus size={16} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2 text-white/50" />
+                                            )}
+                                        </button>
+                                    );
+                                }) : (
+                                    <p className="text-white/40 text-center py-4">No courses available on platform.</p>
+                                )}
+                            </div>
+
+                            <div className="mt-8 flex gap-3">
+                                <button
+                                    onClick={() => setOpenCoursesModal(false)}
+                                    className="w-1/2 py-3 text-white/50 hover:text-white hover:bg-white/5 rounded-xl text-sm font-bold transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <ModernButton
+                                    onClick={confirmCourseAssignment}
+                                    className="w-1/2 !py-3 tracking-widest font-black uppercase text-xs shadow-xl shadow-primary/20"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Saving...' : 'Save Changes'}
+                                </ModernButton>
+                            </div>
+                        </GlassCard>
+                    </div>
                 )
             }
 

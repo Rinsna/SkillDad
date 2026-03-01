@@ -746,8 +746,42 @@ async function inviteUser(req, res) {
 // @access  Private (Admin)
 async function getUniversities(req, res) {
     try {
-        const universities = await User.find({ role: 'university' }).select('name profile');
+        const universities = await User.find({ role: 'university' }).populate('assignedCourses').select('name profile assignedCourses');
         res.json(universities);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+// @desc    Assign courses to a university
+// @route   PUT /api/admin/universities/:id/courses
+// @access  Private (Admin)
+async function assignCoursesToUniversity(req, res) {
+    try {
+        const { courses } = req.body; // Expecting an array of course IDs
+        const university = await User.findById(req.params.id);
+
+        if (!university) {
+            return res.status(404).json({ message: 'University not found' });
+        }
+
+        if (university.role !== 'university') {
+            return res.status(400).json({ message: 'Target entity is not a university' });
+        }
+
+        // Only assign if it's an array, otherwise keep existing
+        if (Array.isArray(courses)) {
+            university.assignedCourses = courses;
+        }
+
+        const updatedUniversity = await university.save();
+
+        res.json({
+            _id: updatedUniversity._id,
+            name: updatedUniversity.name,
+            assignedCourses: updatedUniversity.assignedCourses,
+            message: 'Courses assigned successfully'
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -777,5 +811,6 @@ module.exports = {
     updateDirector,
     deleteDirector,
     inviteUser,
-    getUniversities
+    getUniversities,
+    assignCoursesToUniversity
 };

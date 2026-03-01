@@ -243,14 +243,14 @@ const PaymentInitiation = () => {
                         exit={{ opacity: 0, x: 20 }}
                         className="space-y-6"
                     >
-                        {/* Maintenance Mode Banner */}
-                        {maintenanceMode && (
-                            <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl">
+                        {/* Error Banner */}
+                        {error && (
+                            <div className={`p-6 border rounded-2xl ${maintenanceMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
                                 <div className="flex items-start gap-4">
-                                    <AlertCircle className="text-amber-400 flex-shrink-0 mt-1" size={24} />
+                                    <AlertCircle className={`${maintenanceMode ? 'text-amber-400' : 'text-red-400'} flex-shrink-0 mt-1`} size={24} />
                                     <div className="flex-1">
-                                        <h3 className="text-lg font-bold text-amber-400 mb-2">
-                                            Payment Gateway Temporarily Unavailable
+                                        <h3 className={`text-lg font-bold ${maintenanceMode ? 'text-amber-400' : 'text-red-400'} mb-2`}>
+                                            {maintenanceMode ? 'Payment Gateway Temporarily Unavailable' : 'Payment Initiation Failed'}
                                         </h3>
                                         <p className="text-sm text-gray-300 mb-2">{error}</p>
                                     </div>
@@ -263,7 +263,7 @@ const PaymentInitiation = () => {
                                 <GlassCard className="p-6">
                                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Course Details</h3>
                                     <div className="flex gap-4">
-                                        <img src={course.thumbnail} alt={course.title} className="w-32 h-20 object-cover rounded-xl" />
+                                        <img src={course.thumbnail || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800'} alt={course.title} className="w-32 h-20 object-cover rounded-xl" />
                                         <div className="flex-1">
                                             <h2 className="text-lg font-bold text-white mb-1">{course.title}</h2>
                                             <p className="text-sm text-gray-400 mb-2">by {course.instructor?.name || 'SkillDad'}</p>

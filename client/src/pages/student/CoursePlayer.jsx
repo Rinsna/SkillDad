@@ -54,9 +54,23 @@ const CoursePlayer = () => {
         </div>
     );
 
-    const currentModule = course.modules[currentModuleIndex];
+    const currentModule = course.modules?.[currentModuleIndex];
+
+    // Safety check if course has no modules or videos yet
+    if (!currentModule || !currentModule.videos || currentModule.videos.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-white">
+                <h2 className="text-xl font-bold mb-4">Content Unavailable</h2>
+                <p className="text-gray-400 mb-6">This course doesn't have any published modules or videos yet.</p>
+                <ModernButton onClick={() => navigate('/dashboard/my-courses')}>
+                    Back to Dashboard
+                </ModernButton>
+            </div>
+        );
+    }
+
     const currentVideo = currentModule.videos[currentVideoIndex];
-    const currentExercise = currentVideo.exercises[0];
+    const currentExercise = currentVideo?.exercises?.[0];
 
     const handleVideoEnd = () => {
         if (currentExercise && !userProgress.completedExercises?.some(ex => ex.video === currentVideo._id)) {

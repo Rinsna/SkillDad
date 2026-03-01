@@ -24,7 +24,8 @@ const {
     createDirector,
     updateDirector,
     deleteDirector,
-    getUniversities
+    getUniversities,
+    assignCoursesToUniversity
 } = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -41,6 +42,7 @@ router.get('/stats', protect, checkAdmin, getGlobalStats);
 router.get('/analytics', protect, checkAdmin, getPlatformAnalytics);
 router.get('/users', protect, checkAdmin, getAllUsers);
 router.get('/universities', protect, checkAdmin, getUniversities);
+router.put('/universities/:id/courses', protect, checkAdmin, assignCoursesToUniversity);
 // All users without pagination — used by B2B management
 router.get('/users/all', protect, checkAdmin, async (req, res) => {
     try {

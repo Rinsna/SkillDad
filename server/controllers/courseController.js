@@ -54,7 +54,16 @@ const getAdminCourses = asyncHandler(async (req, res) => {
     try {
         let filter = {};
         if (req.user.role !== 'admin') {
-            filter.instructor = req.user.id;
+            const User = require('../models/userModel');
+            const user = await User.findById(req.user.id);
+            const assignedCourses = user?.assignedCourses || [];
+
+            filter = {
+                $or: [
+                    { instructor: req.user.id },
+                    { _id: { $in: assignedCourses } }
+                ]
+            };
         }
         const courses = await Course.find(filter)
             .populate({
