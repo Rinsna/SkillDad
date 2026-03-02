@@ -70,6 +70,12 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
 
         console.log('[Zoom] SDK config received, initializing SDK...');
 
+        // Wait for the DOM element to be ready
+        if (!meetingSDKElement.current) {
+          console.error('[Zoom] Meeting SDK element not ready');
+          throw new Error('Meeting container not ready');
+        }
+
         // Initialize Zoom SDK
         const client = ZoomMtgEmbedded.createClient();
         setSdkClient(client);
@@ -111,6 +117,7 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
       }
     };
 
+    // Only initialize if we have sessionId and the element is mounted
     if (sessionId && meetingSDKElement.current) {
       console.log('[Zoom] useEffect triggered - initializing Zoom');
       console.log('[Zoom] meetingSDKElement.current:', meetingSDKElement.current);
@@ -120,6 +127,17 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         sessionId: sessionId,
         meetingSDKElement: meetingSDKElement.current ? 'Present' : 'Not ready'
       });
+      
+      // If sessionId exists but element isn't ready, wait a bit and try again
+      if (sessionId && !meetingSDKElement.current) {
+        const timer = setTimeout(() => {
+          if (meetingSDKElement.current) {
+            console.log('[Zoom] Element now ready, retrying initialization');
+            initializeZoom();
+          }
+        }, 100);
+        return () => clearTimeout(timer);
+      }
     }
 
     // Cleanup function
@@ -133,7 +151,7 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         }
       }
     };
-  }, [sessionId, isHost]);
+  }, [sessionId, isHost, propToken]);
 
   const handleLeave = () => {
     if (sdkClient) {
