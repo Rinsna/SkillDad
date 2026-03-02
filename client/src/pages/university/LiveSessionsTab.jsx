@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -483,7 +484,7 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
 };
 
 /* ── Session Card ────────────────────────────────────────── */
-const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, loadingId }) => {
+const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onJoinHost, onJoinStudent, loadingId }) => {
     const isLoading = loadingId === session._id;
 
     return (
@@ -587,30 +588,26 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, loadingId })
                         </button>
                     )}
 
-                    {/* Host Link - Direct Zoom URL */}
-                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.startUrl && (
-                        <a
-                            href={session.zoom.startUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                    {/* Join as Host - Embedded Zoom */}
+                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.meetingId && (
+                        <button
+                            onClick={() => onJoinHost(session._id)}
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-colors"
-                            title="Open Zoom meeting as host"
+                            title="Join meeting as host (embedded)"
                         >
-                            <Link2 size={13} /> Host Link
-                        </a>
+                            <Radio size={13} /> Enter Studio
+                        </button>
                     )}
 
-                    {/* Student Join Link - Same as Host Link (Direct Zoom URL) */}
-                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.startUrl && (
-                        <a
-                            href={session.zoom.startUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                    {/* Join as Student - Embedded Zoom */}
+                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.meetingId && (
+                        <button
+                            onClick={() => onJoinStudent(session._id)}
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold hover:bg-blue-500/20 transition-colors"
-                            title="Share this link with students to join the meeting"
+                            title="Join meeting as student (embedded)"
                         >
-                            <ExternalLink size={13} /> Student Link
-                        </a>
+                            <Video size={13} /> Join Session
+                        </button>
                     )}
 
                     {/* External Meeting Link */}
@@ -726,6 +723,7 @@ const Toast = ({ msg, type = 'info', onClose }) => {
 
 /* ── Main LiveSessionsTab component ──────────────────────── */
 const LiveSessionsTab = ({ students }) => {
+    const navigate = useNavigate();
     // Initialise with demo data so the page is NEVER blank on first render
     // Initialise empty so we can detect once API responds
     const [sessions, setSessions] = useState([]);
@@ -868,6 +866,14 @@ const LiveSessionsTab = ({ students }) => {
         setTimeout(() => fetchSessions(), 2000);
     };
 
+    const handleJoinHost = (id) => {
+        navigate(`/host-room/${id}`);
+    };
+
+    const handleJoinStudent = (id) => {
+        navigate(`/student-room/${id}`);
+    };
+
     /* ── Derived ── */
     const filtered = filterStatus === 'all'
         ? sessions
@@ -976,6 +982,8 @@ const LiveSessionsTab = ({ students }) => {
                                     onEnd={handleEnd}
                                     onNotify={handleNotify}
                                     onDelete={handleDelete}
+                                    onJoinHost={handleJoinHost}
+                                    onJoinStudent={handleJoinStudent}
                                     loadingId={loadingId}
                                 />
                             </motion.div>

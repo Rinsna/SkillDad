@@ -27,6 +27,7 @@ const Partners = lazy(() => import('./pages/Partners'));
 const Settings = lazy(() => import('./pages/Settings'));
 const CourseDetail = lazy(() => import('./pages/CourseDetail'));
 const HostRoom = lazy(() => import('./pages/HostRoom'));
+const StudentRoom = lazy(() => import('./pages/StudentRoom'));
 const NotificationDemo = lazy(() => import('./pages/NotificationDemo'));
 const LinkZoomRecording = lazy(() => import('./pages/university/LinkZoomRecording'));
 const MockPaymentGateway = lazy(() => import('./pages/MockPaymentGateway'));
@@ -120,6 +121,7 @@ function App() {
                 <Route path="/support" element={<Support />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/host-room/:id" element={<HostRoom />} />
+                <Route path="/student-room/:id" element={<StudentRoom />} />
                 <Route path="/demo-notification" element={<NotificationDemo />} />
                 <Route path="/mock-gateway/*" element={<MockPaymentGateway />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
