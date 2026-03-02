@@ -94,6 +94,8 @@ const PartnerStudentManagement = () => {
     const fetchUniversities = async () => {
         try {
             const { data } = await axios.get('/api/public/universities');
+            console.log('Fetched universities:', data);
+            console.log('Universities count:', data?.length);
             setAvailableUniversities(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error fetching universities:', error);
@@ -368,17 +370,27 @@ const PartnerStudentManagement = () => {
                                 <label className="block text-sm font-bold text-white/70 mb-2">University *</label>
                                 <select
                                     value={newStudentData.university}
-                                    onChange={(e) => setNewStudentData({ ...newStudentData, university: e.target.value })}
+                                    onChange={(e) => {
+                                        console.log('University selected:', e.target.value);
+                                        setNewStudentData({ ...newStudentData, university: e.target.value });
+                                    }}
                                     className="w-full px-4 py-2 bg-[#0B0F1A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary"
                                     required
                                 >
                                     <option value="">Select a university</option>
-                                    {availableUniversities.map(uni => (
-                                        <option key={uni._id} value={uni._id}>
-                                            {uni.profile?.universityName || uni.name || uni.email}
-                                        </option>
-                                    ))}
+                                    {availableUniversities.length > 0 ? (
+                                        availableUniversities.map(uni => (
+                                            <option key={uni._id} value={uni._id}>
+                                                {uni.profile?.universityName || uni.name || uni.email}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="" disabled>Loading universities...</option>
+                                    )}
                                 </select>
+                                {availableUniversities.length === 0 && (
+                                    <p className="text-xs text-white/40 mt-1">No approved universities found</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-white/70 mb-2">Affiliation Code *</label>
