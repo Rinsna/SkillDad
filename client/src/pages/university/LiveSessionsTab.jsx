@@ -626,7 +626,7 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLin
                     {/* Delete */}
                     {session.status !== 'live' && (
                         <button
-                            onClick={() => handleDelete(session._id)}
+                            onClick={() => onDelete(session._id)}
                             disabled={isLoading}
                             title="Cancel session"
                             className="p-2 text-white/20 hover:text-red-400 transition-colors"
@@ -949,9 +949,9 @@ const LiveSessionsTab = ({ students }) => {
             ) : (
                 <div className="space-y-3">
                     <AnimatePresence>
-                        {filtered.map(session => (
+                        {filtered.map((session, index) => (
                             <motion.div
-                                key={session._id}
+                                key={session._id || `session-${index}`}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
