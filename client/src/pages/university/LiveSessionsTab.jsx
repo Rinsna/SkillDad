@@ -483,7 +483,7 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
 };
 
 /* ── Session Card ────────────────────────────────────────── */
-const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLink, loadingId }) => {
+const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, loadingId }) => {
     const isLoading = loadingId === session._id;
 
     return (
@@ -587,16 +587,17 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLin
                         </button>
                     )}
 
-                    {/* Host Link */}
-                    {(session.status === 'scheduled' || session.status === 'live') && (
-                        <button
-                            onClick={() => onGetHostLink(session._id)}
-                            disabled={isLoading}
-                            title="Generate host room link for the instructor"
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                    {/* Host Link - Direct Zoom URL */}
+                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.startUrl && (
+                        <a
+                            href={session.zoom.startUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-colors"
+                            title="Open Zoom meeting as host"
                         >
                             <Link2 size={13} /> Host Link
-                        </button>
+                        </a>
                     )}
 
                     {/* External Meeting Link */}
@@ -961,7 +962,6 @@ const LiveSessionsTab = ({ students }) => {
                                     onStart={handleStart}
                                     onEnd={handleEnd}
                                     onNotify={handleNotify}
-                                    onGetHostLink={handleGetHostLink}
                                     onDelete={handleDelete}
                                     loadingId={loadingId}
                                 />
