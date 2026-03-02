@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import ZoomMtgEmbedded from '@zoom/meetingsdk/embedded';
 import axios from 'axios';
 import MockZoomMeeting from './MockZoomMeeting';
+import './ZoomMeeting.css';
 
 /**
  * ZoomMeeting Component
@@ -94,7 +95,18 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
           zoomAppRoot: meetingSDKElement.current,
           language: 'en-US',
           patchJsMedia: true,
-          leaveOnPageUnload: true
+          leaveOnPageUnload: true,
+          customize: {
+            video: {
+              isResizable: true,
+              viewSizes: {
+                default: {
+                  width: '100%',
+                  height: '100%'
+                }
+              }
+            }
+          }
         });
 
         console.log('[Zoom] SDK initialized, joining meeting...');
@@ -198,8 +210,13 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
       {/* Zoom Meeting Container - Always rendered so ref is available */}
       <div
         ref={meetingSDKElement}
-        className="w-full h-full"
-        style={{ width: '100%', height: '100%', minHeight: '100%' }}
+        className="w-full h-full zoom-meeting-container"
+        style={{ 
+          width: '100%', 
+          height: '100%', 
+          minHeight: '100%',
+          position: 'relative'
+        }}
       />
 
       {/* Loading overlay */}

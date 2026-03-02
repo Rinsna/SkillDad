@@ -1,0 +1,45 @@
+/* Force Zoom SDK to use fullscreen layout */
+.zoom-meeting-container {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+/* Override Zoom SDK's internal container styles */
+.zoom-meeting-container > div {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+/* Force Zoom video container to be fullscreen */
+.zoom-meeting-container [class*="video-container"],
+.zoom-meeting-container [class*="viewport"],
+.zoom-meeting-container [class*="meeting-app"],
+.zoom-meeting-container [class*="meeting-client"] {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+}
+
+/* Force gallery view to expand */
+.zoom-meeting-container [class*="gallery-video-container"],
+.zoom-meeting-container [class*="gallery-view-container"] {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* Force active speaker view to expand */
+.zoom-meeting-container [class*="active-speaker"],
+.zoom-meeting-container [class*="speaker-view"] {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Remove any max-width constraints */
+.zoom-meeting-container * {
+  max-width: none !important;
+}
