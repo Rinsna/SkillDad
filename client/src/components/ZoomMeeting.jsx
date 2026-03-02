@@ -9,10 +9,11 @@ import MockZoomMeeting from './MockZoomMeeting';
  * 
  * @param {string} sessionId - The session ID to join
  * @param {boolean} isHost - Whether the user is the host (instructor/university)
+ * @param {string} token - Authentication token (optional, will use localStorage if not provided)
  * @param {function} onLeave - Callback when user leaves the meeting
  * @param {function} onError - Callback when an error occurs
  */
-const ZoomMeeting = ({ sessionId, isHost = false, onLeave, onError }) => {
+const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onError }) => {
   // Check if we should use mock mode (when SDK config returns mock data)
   const [useMockMode, setUseMockMode] = useState(false);
   const meetingSDKElement = useRef(null);
@@ -28,7 +29,7 @@ const ZoomMeeting = ({ sessionId, isHost = false, onLeave, onError }) => {
 
         // Fetch SDK configuration from backend
         const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-        const token = localStorage.getItem('token') || userInfo.token;
+        const token = propToken || localStorage.getItem('token') || userInfo.token;
         if (!token) {
           throw new Error('Authentication required. Please log in.');
         }

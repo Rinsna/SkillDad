@@ -93,9 +93,13 @@ const HostRoom = () => {
                 <div className="bg-white/5 rounded-xl overflow-hidden border border-white/10">
                     <ZoomMeeting
                         sessionId={id}
-                        meetingNumber={session.zoomMeetingId}
-                        role={1} // 1 = Host
-                        userName="Host"
+                        isHost={true}
+                        token={searchParams.get('token')}
+                        onLeave={() => navigate('/dashboard')}
+                        onError={(error) => {
+                            console.error('Zoom meeting error:', error);
+                            setError(error);
+                        }}
                     />
                 </div>
             </div>
