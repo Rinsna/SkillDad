@@ -33,9 +33,13 @@ const PartnerStudentManagement = () => {
         phone: '',
         password: '',
         course: '',
+        courseFee: '',
+        university: '',
         partnerCode: ''
     });
     const [partnerCodes, setPartnerCodes] = useState([]);
+    const [availableCourses, setAvailableCourses] = useState([]);
+    const [availableUniversities, setAvailableUniversities] = useState([]);
     const { showToast } = useToast();
 
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -58,6 +62,8 @@ const PartnerStudentManagement = () => {
         if (userInfo.token) {
             fetchStudents();
             fetchCodes();
+            fetchCourses();
+            fetchUniversities();
         }
     }, []);
 
@@ -71,6 +77,35 @@ const PartnerStudentManagement = () => {
         } catch (error) {
             console.error('Error fetching partner codes:', error);
         }
+    };
+
+    const fetchCourses = async () => {
+        try {
+            const { data } = await axios.get('/api/courses', config);
+            setAvailableCourses(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Error fetching courses:', error);
+            showToast('Failed to fetch courses', 'error');
+        }
+    };
+
+    const fetchUniversities = async () => {
+        try {
+            const { data } = await axios.get('/api/admin/universities', config);
+            setAvailableUniversities(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Error fetching universities:', error);
+            showToast('Failed to fetch universities', 'error');
+        }
+    };
+
+    const handleCourseChange = (courseId) => {
+        const selectedCourse = availableCourses.find(c => c._id === courseId);
+        setNewStudentData({
+            ...newStudentData,
+            course: courseId,
+            courseFee: selectedCourse?.price || ''
+        });
     };
 
     const handleRegisterStudent = async () => {
@@ -87,7 +122,16 @@ const PartnerStudentManagement = () => {
             await axios.post('/api/partner/register-student', newStudentData, config);
 
             setShowRegisterStudentModal(false);
-            setNewStudentData({ name: '', email: '', phone: '', password: '', course: '', partnerCode: partnerCodes.length > 0 ? partnerCodes[0].code : '' });
+            setNewStudentData({ 
+                name: '', 
+                email: '', 
+                phone: '', 
+                password: '', 
+                course: '', 
+                courseFee: '',
+                university: '',
+                partnerCode: partnerCodes.length > 0 ? partnerCodes[0].code : '' 
+            });
             showToast('Student registered in the system successfully!', 'success');
 
             // Refresh list
@@ -265,32 +309,41 @@ const PartnerStudentManagement = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-white/70 mb-2">Affiliation Code *</label>
+                                <label className="block text-sm font-bold text-white/70 mb-2">Course *</label>
                                 <select
-                                    value={newStudentData.partnerCode}
-                                    onChange={(e) => setNewStudentData({ ...newStudentData, partnerCode: e.target.value })}
+                                    value={newStudentData.course}
+                                    onChange={(e) => handleCourseChange(e.target.value)}
                                     className="w-full px-4 py-2 bg-[#0B0F1A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary"
                                     required
                                 >
-                                    <option value="" disabled>Select an affiliation code</option>
-                                    {partnerCodes.map(c => (
-                                        <option key={c._id} value={c.code}>{c.code} ({c.type === 'percentage' ? `${c.value}%` : `$${c.value}`} off)</option>
+                                    <option value="">Select a course</option>
+                                    {availableCourses.map(course => (
+                                        <option key={course._id} value={course._id}>
+                                            {course.title}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
-                        </div>
-                        <div className="flex gap-3 mt-6">
-                            <ModernButton
-                                variant="secondary"
-                                onClick={() => setShowRegisterStudentModal(false)}
-                                className="flex-1 border !border-white/10"
-                            >
-                                Cancel
-                            </ModernButton>
-                            <ModernButton onClick={handleRegisterStudent} className="flex-1">
-                                Register
-                            </ModernButton>
-                        </div>
+                            <div>
+                                <label className="block text-sm font-bold text-white/70 mb-2">Course Fee</label>
+                                <input
+                                    type="text"
+                                    value={newStudentData.courseFee ? `₹${newStudentData.courseFee}` : ''}
+                                    readOnly
+                                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white/60 cursor-not-allowed"
+                                    placeholder="Auto-filled based on course"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-white/70 mb-2">University *</label>
+                                <select
+              ty}
+                                    onChange={(e) => setNewStudentData({ ...newStudentData, university: e.target.value })}
+                                    className="w-full px-4 py-2 bg-[#0B0F1A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary"
+                                    required
+                                >
+                                    <option value="">Select a university</option>
+  </div>
                     </motion.div>
                 </div>
             )}
@@ -299,3 +352,37 @@ const PartnerStudentManagement = () => {
 };
 
 export default PartnerStudentManagement;
+                           variant="secondary"
+                                onClick={() => setShowRegisterStudentModal(false)}
+                                className="flex-1 border !border-white/10"
+                            >
+                                Cancel
+                            </ModernButton>
+                            <ModernButton onClick={handleRegisterStudent} className="flex-1">
+                                Register
+                            </ModernButton>
+                       disabled>Select an affiliation code</option>
+                                    {partnerCodes.map(c => (
+                                        <option key={c._id} value={c.code}>{c.code} ({c.type === 'percentage' ? `${c.value}%` : `${c.value}`} off)</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <ModernButton
+                        <select
+                                    value={newStudentData.partnerCode}
+                                    onChange={(e) => setNewStudentData({ ...newStudentData, partnerCode: e.target.value })}
+                                    className="w-full px-4 py-2 bg-[#0B0F1A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary"
+                                    required
+                                >
+                                    <option value=""i => (
+                                        <option key={uni._id} value={uni._id}>
+                                            {uni.profile?.universityName || uni.name || uni.email}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-white/70 mb-2">Affiliation Code *</label>
+                                                 {availableUniversities.map(un
