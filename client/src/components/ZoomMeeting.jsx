@@ -22,26 +22,36 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
   const [sdkClient, setSdkClient] = useState(null);
 
   useEffect(() => {
+    let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 10;
+
     const initializeZoom = async () => {
       try {
+        if (!mounted) return;
+        
         setLoading(true);
         setError(null);
 
         console.log('[Zoom] Starting initialization...');
         console.log('[Zoom] Session ID:', sessionId);
         console.log('[Zoom] Is Host:', isHost);
-        console.log('[Zoom] Prop Token:', propToken ? 'Present' : 'Not provided');
+
+        // Wait for DOM element to be ready
+        if (!meetingSDKElement.current) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.log(`[Zoom] Element not ready, retry ${retryCount}/${maxRetries}`);
+            setTimeout(() => initializeZoom(), 100);
+            return;
+          } else {
+            throw new Error('Meeting container failed to initialize');
+          }
+        }
 
         // Fetch SDK configuration from backend
         const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
         const token = propToken || localStorage.getItem('token') || userInfo.token;
-        
-        console.log('[Zoom] Token resolution:', {
-          propToken: propToken ? 'Present' : 'Not provided',
-          localStorage: localStorage.getItem('token') ? 'Present' : 'Not found',
-          userInfo: userInfo.token ? 'Present' : 'Not found',
-          finalToken: token ? 'Present' : 'Not found'
-        });
 
         if (!token) {
           throw new Error('Authentication required. Please log in.');
@@ -55,10 +65,11 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         };
 
         console.log(`[Zoom] Fetching SDK config for session: ${sessionId}`);
-        console.log(`[Zoom] API URL: /api/sessions/${sessionId}/zoom-config`);
         const response = await axios.get(`/api/sessions/${sessionId}/zoom-config`, config);
         console.log('[Zoom] SDK config response:', response.data);
         const sdkConfig = response.data;
+
+        if (!mounted) return;
 
         // Check if we're in mock mode (SDK key starts with MOCK_)
         if (sdkConfig.sdkKey && sdkConfig.sdkKey.startsWith('MOCK_')) {
@@ -70,14 +81,10 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
 
         console.log('[Zoom] SDK config received, initializing SDK...');
 
-        // Wait for the DOM element to be ready
-        if (!meetingSDKElement.current) {
-          console.error('[Zoom] Meeting SDK element not ready');
-          throw new Error('Meeting container not ready');
-        }
-
         // Initialize Zoom SDK
         const client = ZoomMtgEmbedded.createClient();
+        
+        if (!mounted) return;
         setSdkClient(client);
 
         // Initialize the SDK with the meeting container
@@ -89,6 +96,8 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         });
 
         console.log('[Zoom] SDK initialized, joining meeting...');
+
+        if (!mounted) return;
 
         // Join the meeting
         await client.join({
@@ -103,10 +112,14 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         });
 
         console.log('[Zoom] Successfully joined meeting');
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
 
       } catch (err) {
         console.error('[Zoom] Error initializing Zoom:', err);
+        if (!mounted) return;
+        
         const errorMessage = err.response?.data?.message || err.message || 'Failed to join meeting';
         setError(errorMessage);
         setLoading(false);
@@ -117,31 +130,17 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
       }
     };
 
-    // Only initialize if we have sessionId and the element is mounted
-    if (sessionId && meetingSDKElement.current) {
-      console.log('[Zoom] useEffect triggered - initializing Zoom');
-      console.log('[Zoom] meetingSDKElement.current:', meetingSDKElement.current);
+    // Only initialize if we have sessionId
+    if (sessionId) {
+      console.log('[Zoom] useEffect triggered - starting initialization');
       initializeZoom();
     } else {
-      console.log('[Zoom] useEffect triggered but conditions not met:', {
-        sessionId: sessionId,
-        meetingSDKElement: meetingSDKElement.current ? 'Present' : 'Not ready'
-      });
-      
-      // If sessionId exists but element isn't ready, wait a bit and try again
-      if (sessionId && !meetingSDKElement.current) {
-        const timer = setTimeout(() => {
-          if (meetingSDKElement.current) {
-            console.log('[Zoom] Element now ready, retrying initialization');
-            initializeZoom();
-          }
-        }, 100);
-        return () => clearTimeout(timer);
-      }
+      console.log('[Zoom] useEffect triggered but sessionId not provided');
     }
 
     // Cleanup function
     return () => {
+      mounted = false;
       if (sdkClient) {
         try {
           console.log('[Zoom] Cleaning up SDK client');
@@ -151,7 +150,7 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         }
       }
     };
-  }, [sessionId, isHost, propToken]);
+  }, [sessionId, isHost, propToken, onError]);
 
   const handleLeave = () => {
     if (sdkClient) {
