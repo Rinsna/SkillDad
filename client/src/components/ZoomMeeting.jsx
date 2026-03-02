@@ -95,18 +95,7 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
           zoomAppRoot: meetingSDKElement.current,
           language: 'en-US',
           patchJsMedia: true,
-          leaveOnPageUnload: true,
-          customize: {
-            video: {
-              isResizable: true,
-              viewSizes: {
-                default: {
-                  width: '100%',
-                  height: '100%'
-                }
-              }
-            }
-          }
+          leaveOnPageUnload: true
         });
 
         console.log('[Zoom] SDK initialized, joining meeting...');
