@@ -3,10 +3,13 @@
   width: 100% !important;
   height: 100% !important;
   position: relative !important;
+  overflow: hidden !important;
 }
 
-/* Override Zoom SDK's internal container styles */
-.zoom-meeting-container > div {
+/* Override Zoom SDK's internal container styles - all levels */
+.zoom-meeting-container > div,
+.zoom-meeting-container > div > div,
+.zoom-meeting-container > div > div > div {
   width: 100% !important;
   height: 100% !important;
   position: relative !important;
@@ -16,7 +19,9 @@
 .zoom-meeting-container [class*="video-container"],
 .zoom-meeting-container [class*="viewport"],
 .zoom-meeting-container [class*="meeting-app"],
-.zoom-meeting-container [class*="meeting-client"] {
+.zoom-meeting-container [class*="meeting-client"],
+.zoom-meeting-container [class*="meeting-container"],
+.zoom-meeting-container [class*="main-container"] {
   width: 100% !important;
   height: 100% !important;
   min-width: 100% !important;
@@ -25,7 +30,9 @@
 
 /* Force gallery view to expand */
 .zoom-meeting-container [class*="gallery-video-container"],
-.zoom-meeting-container [class*="gallery-view-container"] {
+.zoom-meeting-container [class*="gallery-view-container"],
+.zoom-meeting-container [class*="gallery-video-list"],
+.zoom-meeting-container [class*="gallery-video-wrap"] {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
@@ -34,12 +41,29 @@
 
 /* Force active speaker view to expand */
 .zoom-meeting-container [class*="active-speaker"],
-.zoom-meeting-container [class*="speaker-view"] {
+.zoom-meeting-container [class*="speaker-view"],
+.zoom-meeting-container [class*="active-video"],
+.zoom-meeting-container [class*="video-player"] {
   width: 100% !important;
   height: 100% !important;
 }
 
-/* Remove any max-width constraints */
+/* Force video canvas to be fullscreen */
+.zoom-meeting-container canvas,
+.zoom-meeting-container video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* Remove any max-width/max-height constraints */
 .zoom-meeting-container * {
   max-width: none !important;
+  max-height: none !important;
+}
+
+/* Hide any sidebars or panels that might be limiting the view */
+.zoom-meeting-container [class*="sidebar"],
+.zoom-meeting-container [class*="panel"] {
+  display: none !important;
 }
