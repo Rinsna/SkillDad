@@ -35,8 +35,10 @@ const PartnerStudentManagement = () => {
         course: '',
         courseFee: '',
         university: '',
-        partnerCode: ''
+        partnerCode: '',
+        customCode: ''
     });
+    const [showCustomCodeInput, setShowCustomCodeInput] = useState(false);
     const [partnerCodes, setPartnerCodes] = useState([]);
     const [availableCourses, setAvailableCourses] = useState([]);
     const [availableUniversities, setAvailableUniversities] = useState([]);
@@ -114,14 +116,25 @@ const PartnerStudentManagement = () => {
                 showToast('Please fill all required fields', 'warning');
                 return;
             }
-            if (!newStudentData.partnerCode) {
-                showToast('You must select an affiliation code! Please generate one in Commission & Wallet first if empty.', 'warning');
+            
+            // Use custom code if provided, otherwise use selected partner code
+            const codeToUse = showCustomCodeInput ? newStudentData.customCode : newStudentData.partnerCode;
+            
+            if (!codeToUse) {
+                showToast('You must select or enter an affiliation code!', 'warning');
                 return;
             }
 
-            await axios.post('/api/partner/register-student', newStudentData, config);
+            // Prepare data with the appropriate code
+            const dataToSend = {
+                ...newStudentData,
+                partnerCode: codeToUse
+            };
+
+            await axios.post('/api/partner/register-student', dataToSend, config);
 
             setShowRegisterStudentModal(false);
+            setShowCustomCodeInput(false);
             setNewStudentData({ 
                 name: '', 
                 email: '', 
@@ -130,7 +143,8 @@ const PartnerStudentManagement = () => {
                 course: '', 
                 courseFee: '',
                 university: '',
-                partnerCode: partnerCodes.length > 0 ? partnerCodes[0].code : '' 
+                partnerCode: partnerCodes.length > 0 ? partnerCodes[0].code : '',
+                customCode: ''
             });
             showToast('Student registered in the system successfully!', 'success');
 
@@ -257,7 +271,23 @@ const PartnerStudentManagement = () => {
 
             {/* Register New Student Modal */}
             {showRegisterStudentModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[250] flex items-start justify-center p-4 pt-20 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowRegisterStudentModal(false); }}>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[250] flex items-start justify-center p-4 pt-20 overflow-y-auto" onClick={(e) => { 
+                    if (e.target === e.currentTarget) {
+                        setShowRegisterStudentModal(false);
+                        setShowCustomCodeInput(false);
+                        setNewStudentData({ 
+                            name: '', 
+                            email: '', 
+                            phone: '', 
+                            password: '', 
+                            course: '', 
+                            courseFee: '',
+                            university: '',
+                            partnerCode: partnerCodes.length > 0 ? partnerCodes[0].code : '',
+                            customCode: ''
+                        });
+                    }
+                }}>
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -353,8 +383,16 @@ const PartnerStudentManagement = () => {
                             <div>
                                 <label className="block text-sm font-bold text-white/70 mb-2">Affiliation Code *</label>
                                 <select
-                                    value={newStudentData.partnerCode}
-                                    onChange={(e) => setNewStudentData({ ...newStudentData, partnerCode: e.target.value })}
+                                    value={showCustomCodeInput ? 'custom' : newStudentData.partnerCode}
+                                    onChange={(e) => {
+                                        if (e.target.value === 'custom') {
+                                            setShowCustomCodeInput(true);
+                                            setNewStudentData({ ...newStudentData, partnerCode: '' });
+                                        } else {
+                                            setShowCustomCodeInput(false);
+                                            setNewStudentData({ ...newStudentData, partnerCode: e.target.value, customCode: '' });
+                                        }
+                                    }}
                                     className="w-full px-4 py-2 bg-[#0B0F1A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary"
                                     required
                                 >
@@ -362,13 +400,38 @@ const PartnerStudentManagement = () => {
                                     {partnerCodes.map(c => (
                                         <option key={c._id} value={c.code}>{c.code} ({c.type === 'percentage' ? `${c.value}%` : `$${c.value}`} off)</option>
                                     ))}
+                                    <option value="custom">Custom Code</option>
                                 </select>
+                                {showCustomCodeInput && (
+                                    <input
+                                        type="text"
+                                        value={newStudentData.customCode}
+                                        onChange={(e) => setNewStudentData({ ...newStudentData, customCode: e.target.value })}
+                                        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-primary mt-2"
+                                        placeholder="Enter custom affiliation code"
+                                        required
+                                    />
+                                )}
                             </div>
                         </div>
                         <div className="flex gap-3 mt-6">
                             <ModernButton
                                 variant="secondary"
-                                onClick={() => setShowRegisterStudentModal(false)}
+                                onClick={() => {
+                                    setShowRegisterStudentModal(false);
+                                    setShowCustomCodeInput(false);
+                                    setNewStudentData({ 
+                                        name: '', 
+                                        email: '', 
+                                        phone: '', 
+                                        password: '', 
+                                        course: '', 
+                                        courseFee: '',
+                                        university: '',
+                                        partnerCode: partnerCodes.length > 0 ? partnerCodes[0].code : '',
+                                        customCode: ''
+                                    });
+                                }}
                                 className="flex-1 border !border-white/10"
                             >
                                 Cancel

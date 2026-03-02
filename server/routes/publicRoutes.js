@@ -34,12 +34,15 @@ router.get('/directors', async (req, res) => {
     }
 });
 
-// @desc    Get all universities (for partner student registration)
+// @desc    Get all admin-approved universities (for partner student registration)
 // @route   GET /api/public/universities
 // @access  Public
 router.get('/universities', async (req, res) => {
     try {
-        const universities = await User.find({ role: 'university' })
+        const universities = await User.find({ 
+            role: 'university',
+            isVerified: true  // Only fetch admin-approved universities
+        })
             .select('name email profile')
             .sort({ 'profile.universityName': 1, name: 1 });
         res.json(universities || []);
