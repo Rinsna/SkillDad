@@ -194,17 +194,17 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
   }
 
   return (
-    <div className="relative w-full h-full min-h-[600px]">
+    <div className="relative w-full h-full">
       {/* Zoom Meeting Container - Always rendered so ref is available */}
       <div
         ref={meetingSDKElement}
-        className="w-full h-full min-h-[600px] rounded-lg overflow-hidden"
-        style={{ width: '100%', height: '100%' }}
+        className="w-full h-full"
+        style={{ width: '100%', height: '100%', minHeight: '100%' }}
       />
 
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 border border-primary/30 rounded-lg">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
             <p className="text-white/60 text-sm">Connecting to meeting...</p>

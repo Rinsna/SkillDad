@@ -81,27 +81,37 @@ const StudentRoom = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black">
-            <div className="container mx-auto px-4 py-6">
-                <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-white mb-2">{session.topic}</h1>
-                    <p className="text-white/60 text-sm">
-                        {session.instructor?.name && `Instructor: ${session.instructor.name} • `}
-                        Status: {session.status}
-                    </p>
+        <div className="fixed inset-0 bg-black flex flex-col">
+            {/* Header Bar */}
+            <div className="flex-shrink-0 bg-black/90 border-b border-white/10 px-6 py-3">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-lg font-bold text-white">{session.topic}</h1>
+                        <p className="text-white/40 text-xs">
+                            {session.instructor?.name && `Instructor: ${session.instructor.name} • `}
+                            Status: {session.status}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-sm transition-colors"
+                    >
+                        Exit
+                    </button>
                 </div>
+            </div>
 
-                <div className="bg-white/5 rounded-xl overflow-hidden border border-white/10">
-                    <ZoomMeeting
-                        sessionId={id}
-                        isHost={false}
-                        onLeave={() => navigate('/dashboard')}
-                        onError={(error) => {
-                            console.error('Zoom meeting error:', error);
-                            setError(error);
-                        }}
-                    />
-                </div>
+            {/* Zoom Meeting - Full Height */}
+            <div className="flex-1 overflow-hidden">
+                <ZoomMeeting
+                    sessionId={id}
+                    isHost={false}
+                    onLeave={() => navigate('/dashboard')}
+                    onError={(error) => {
+                        console.error('Zoom meeting error:', error);
+                        setError(error);
+                    }}
+                />
             </div>
         </div>
     );
