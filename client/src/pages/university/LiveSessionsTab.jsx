@@ -554,7 +554,7 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLin
                     {/* Start button */}
                     {session.status === 'scheduled' && (
                         <button
-                            onClick={() => handleStart(session._id)}
+                            onClick={() => onStart(session._id)}
                             disabled={isLoading}
                             title="Start session"
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
