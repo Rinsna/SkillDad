@@ -91,7 +91,7 @@ const PartnerStudentManagement = () => {
 
     const fetchUniversities = async () => {
         try {
-            const { data } = await axios.get('/api/admin/universities', config);
+            const { data } = await axios.get('/api/public/universities');
             setAvailableUniversities(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error fetching universities:', error);
