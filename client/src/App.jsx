@@ -72,6 +72,7 @@ const UserList = lazy(() => import('./pages/admin/UserList'));
 const StudentManagement = lazy(() => import('./pages/admin/StudentManagement'));
 const UniversityManagement = lazy(() => import('./pages/admin/UniversityManagement'));
 const B2BManagement = lazy(() => import('./pages/admin/B2BManagement'));
+const PartnerDetail = lazy(() => import('./pages/admin/PartnerDetail'));
 const PlatformAnalytics = lazy(() => import('./pages/admin/PlatformAnalytics'));
 const ProjectManager = lazy(() => import('./pages/admin/ProjectManager'));
 const ExamScheduler = lazy(() => import('./pages/admin/ExamScheduler'));
@@ -194,6 +195,7 @@ function App() {
                     <Route path="university" element={<UniversityManagement />} />
                     <Route path="university/:id" element={<UniversityDetail />} />
                     <Route path="b2b" element={<B2BManagement />} />
+                    <Route path="b2b/:partnerId" element={<PartnerDetail />} />
                     <Route path="analytics" element={<PlatformAnalytics />} />
                     <Route path="coupons" element={<CouponManager />} />
                     <Route path="payouts" element={<PayoutManager />} />

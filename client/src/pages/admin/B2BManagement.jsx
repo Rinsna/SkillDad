@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
     Building2,
@@ -33,6 +34,7 @@ import DashboardHeading from '../../components/ui/DashboardHeading';
 import { useToast } from '../../context/ToastContext';
 
 const B2BManagement = () => {
+    const navigate = useNavigate();
     const [partners, setPartners] = useState([]);
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [openDiscount, setOpenDiscount] = useState(false);
@@ -455,7 +457,12 @@ const B2BManagement = () => {
                                             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-white font-poppins">
                                                 {partner.name?.charAt(0)}
                                             </div>
-                                            <span className="font-bold text-white">{partner.name}</span>
+                                            <button
+                                                onClick={() => navigate(`/admin/b2b/${partner._id}`)}
+                                                className="font-bold text-white hover:text-primary transition-colors text-left"
+                                            >
+                                                {partner.name}
+                                            </button>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
