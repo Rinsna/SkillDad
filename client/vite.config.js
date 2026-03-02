@@ -10,12 +10,14 @@ export default defineConfig({
     host: '127.0.0.1',
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:3030',
+        target: process.env.VITE_API_URL || 'https://skilldad-server.onrender.com',
         changeOrigin: true,
+        secure: false,
       },
       '/uploads': {
-        target: 'http://127.0.0.1:3030',
+        target: process.env.VITE_API_URL || 'https://skilldad-server.onrender.com',
         changeOrigin: true,
+        secure: false,
       },
     },
   },
