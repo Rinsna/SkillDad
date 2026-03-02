@@ -364,6 +364,7 @@ const StudentManagement = () => {
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Student</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">University / Institution</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Registered By</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Enrolled Course</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Enrollments</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Status</th>
@@ -387,6 +388,19 @@ const StudentManagement = () => {
                                     <td className="px-6 py-4">
                                         <div className="text-sm font-medium text-white">{getUniversityName(student)}</div>
                                         <div className="text-[10px] text-gray-500">{student.email}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {student.registeredBy ? (
+                                            <div>
+                                                <div className="text-sm font-medium text-primary">{student.registeredBy.name}</div>
+                                                <div className="text-[10px] text-gray-500 uppercase">{student.registeredBy.role}</div>
+                                                {student.partnerCode && (
+                                                    <div className="text-[9px] text-amber-400 font-mono mt-0.5">Code: {student.partnerCode}</div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="text-xs text-gray-500 italic">Self-registered</div>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-xs text-white/70 font-medium italic">{student.course || 'No Course'}</div>
@@ -580,6 +594,21 @@ const StudentManagement = () => {
                                     <div>
                                         <label className="text-xs text-gray-400 uppercase tracking-wider">Institution / University</label>
                                         <p className="text-white mt-1">{getUniversityName(selectedStudent)}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-400 uppercase tracking-wider">Registered By</label>
+                                        {selectedStudent.registeredBy ? (
+                                            <div className="mt-1">
+                                                <p className="text-white font-medium">{selectedStudent.registeredBy.name}</p>
+                                                <p className="text-xs text-primary uppercase">{selectedStudent.registeredBy.role}</p>
+                                                <p className="text-xs text-gray-400">{selectedStudent.registeredBy.email}</p>
+                                                {selectedStudent.partnerCode && (
+                                                    <p className="text-xs text-amber-400 font-mono mt-1">Code: {selectedStudent.partnerCode}</p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <p className="text-white mt-1 italic text-sm text-gray-400">Self-registered</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
