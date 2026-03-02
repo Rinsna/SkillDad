@@ -600,10 +600,10 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, loadingId })
                         </a>
                     )}
 
-                    {/* Student Join Link - Direct Zoom URL */}
-                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.joinUrl && (
+                    {/* Student Join Link - Same as Host Link (Direct Zoom URL) */}
+                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.startUrl && (
                         <a
-                            href={session.zoom.joinUrl}
+                            href={session.zoom.startUrl}
                             target="_blank"
                             rel="noreferrer"
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold hover:bg-blue-500/20 transition-colors"

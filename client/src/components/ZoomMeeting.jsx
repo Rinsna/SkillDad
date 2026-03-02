@@ -27,9 +27,22 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         setLoading(true);
         setError(null);
 
+        console.log('[Zoom] Starting initialization...');
+        console.log('[Zoom] Session ID:', sessionId);
+        console.log('[Zoom] Is Host:', isHost);
+        console.log('[Zoom] Prop Token:', propToken ? 'Present' : 'Not provided');
+
         // Fetch SDK configuration from backend
         const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
         const token = propToken || localStorage.getItem('token') || userInfo.token;
+        
+        console.log('[Zoom] Token resolution:', {
+          propToken: propToken ? 'Present' : 'Not provided',
+          localStorage: localStorage.getItem('token') ? 'Present' : 'Not found',
+          userInfo: userInfo.token ? 'Present' : 'Not found',
+          finalToken: token ? 'Present' : 'Not found'
+        });
+
         if (!token) {
           throw new Error('Authentication required. Please log in.');
         }
@@ -42,7 +55,9 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
         };
 
         console.log(`[Zoom] Fetching SDK config for session: ${sessionId}`);
+        console.log(`[Zoom] API URL: /api/sessions/${sessionId}/zoom-config`);
         const response = await axios.get(`/api/sessions/${sessionId}/zoom-config`, config);
+        console.log('[Zoom] SDK config response:', response.data);
         const sdkConfig = response.data;
 
         // Check if we're in mock mode (SDK key starts with MOCK_)
@@ -97,7 +112,14 @@ const ZoomMeeting = ({ sessionId, isHost = false, token: propToken, onLeave, onE
     };
 
     if (sessionId && meetingSDKElement.current) {
+      console.log('[Zoom] useEffect triggered - initializing Zoom');
+      console.log('[Zoom] meetingSDKElement.current:', meetingSDKElement.current);
       initializeZoom();
+    } else {
+      console.log('[Zoom] useEffect triggered but conditions not met:', {
+        sessionId: sessionId,
+        meetingSDKElement: meetingSDKElement.current ? 'Present' : 'Not ready'
+      });
     }
 
     // Cleanup function
