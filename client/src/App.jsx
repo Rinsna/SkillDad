@@ -57,6 +57,7 @@ const LiveSessionsHub = lazy(() => import('./pages/university/LiveSessionsHub'))
 const SessionDetail = lazy(() => import('./pages/university/SessionDetail'));
 const ScheduleClass = lazy(() => import('./pages/university/ScheduleClass'));
 const ExamManagement = lazy(() => import('./pages/university/ExamManagement'));
+const CourseContentManagement = lazy(() => import('./pages/university/CourseContentManagement'));
 
 // Partner Pages
 const PartnerDashboard = lazy(() => import('./pages/partner/PartnerDashboard'));
@@ -156,6 +157,7 @@ function App() {
                 <Route element={<ProtectedRoute allowedRoles={['university', 'admin']} />}>
                   <Route path="/university" element={<DashboardLayout />}>
                     <Route path="dashboard" element={<UniversityDashboard />} />
+                    <Route path="courses/:courseId" element={<CourseContentManagement />} />
                     <Route path="groups" element={<GroupManagement />} />
                     <Route path="live-sessions" element={<LiveSessionsHub />} />
                     <Route path="session/:sessionId" element={<SessionDetail />} />

@@ -522,7 +522,11 @@ const UniversityDashboard = () => {
                         </div>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {courses.length > 0 ? courses.map((course) => (
-                                <GlassCard key={course._id || course} className="p-5 flex flex-col justify-between">
+                                <GlassCard 
+                                    key={course._id || course} 
+                                    className="p-5 flex flex-col justify-between cursor-pointer hover:border-primary/50 transition-all"
+                                    onClick={() => navigate(`/university/courses/${course._id}`)}
+                                >
                                     <div>
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform overflow-hidden">
@@ -536,7 +540,7 @@ const UniversityDashboard = () => {
                                         </div>
                                         <h3 className="font-bold text-white text-lg mb-2 line-clamp-2">{course.title || course}</h3>
                                         <p className="text-sm text-white/50 line-clamp-2 mb-4">
-                                            {course.description || 'View detailed curriculum and enrolled students for this course.'}
+                                            {course.description || 'Click to manage course content, modules, and videos.'}
                                         </p>
                                     </div>
                                     <div className="pt-4 mt-auto border-t border-white/10 flex justify-between items-center">
@@ -547,7 +551,8 @@ const UniversityDashboard = () => {
                                             </span>
                                         </div>
                                         <button
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 setFilterCourse(course.title || course);
                                                 setActiveTab('students');
                                             }}
