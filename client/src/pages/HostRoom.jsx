@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import ZoomMeeting from '../components/ZoomMeeting';
 import axios from 'axios';
 
 const HostRoom = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,16 +13,15 @@ const HostRoom = () => {
     useEffect(() => {
         const fetchSession = async () => {
             try {
-                const token = searchParams.get('token');
-                if (!token) {
-                    setError('No authentication token provided');
+                const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                if (!userInfo.token) {
+                    setError('Please log in to host the session');
                     setLoading(false);
                     return;
                 }
 
-                // Use the token from URL for authentication
                 const config = {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${userInfo.token}` }
                 };
 
                 const { data } = await axios.get(`/api/sessions/${id}`, config);
@@ -37,7 +35,7 @@ const HostRoom = () => {
         };
 
         fetchSession();
-    }, [id, searchParams]);
+    }, [id]);
 
     if (loading) {
         return (
@@ -94,7 +92,6 @@ const HostRoom = () => {
                     <ZoomMeeting
                         sessionId={id}
                         isHost={true}
-                        token={searchParams.get('token')}
                         onLeave={() => navigate('/dashboard')}
                         onError={(error) => {
                             console.error('Zoom meeting error:', error);
