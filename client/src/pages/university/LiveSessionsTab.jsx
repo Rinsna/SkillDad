@@ -484,7 +484,16 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
 };
 
 /* ── Session Card ────────────────────────────────────────── */
-const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onJoinHost, onJoinStudent, loadingId }) => {
+const SessionCard = ({ 
+    session, 
+    onStart, 
+    onEnd, 
+    onNotify, 
+    onDelete, 
+    onJoinHost = () => {}, 
+    onJoinStudent = () => {}, 
+    loadingId 
+}) => {
     const isLoading = loadingId === session._id;
 
     return (
