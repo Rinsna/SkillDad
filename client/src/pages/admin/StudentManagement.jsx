@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Users,
@@ -40,6 +41,11 @@ const StudentManagement = () => {
     const [enrollments, setEnrollments] = useState([]);
     const [courses, setCourses] = useState([]);
     const [selectedCourseId, setSelectedCourseId] = useState('all');
+    const [universities, setUniversities] = useState([]);
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const urlUniversityId = searchParams.get('universityId') || 'all';
+    const [selectedUniversityId, setSelectedUniversityId] = useState(urlUniversityId);
 
     useEffect(() => {
         fetchStudents();
@@ -50,7 +56,14 @@ const StudentManagement = () => {
         }, 30000);
 
         return () => clearInterval(interval);
-    }, [selectedCourseId]);
+    }, [selectedCourseId, selectedUniversityId]);
+
+    // Update state when URL changes
+    useEffect(() => {
+        if (urlUniversityId !== selectedUniversityId) {
+            setSelectedUniversityId(urlUniversityId);
+        }
+    }, [urlUniversityId]);
 
     const fetchCourses = async () => {
         try {
@@ -58,10 +71,16 @@ const StudentManagement = () => {
             if (!rawInfo) return;
             const userInfo = JSON.parse(rawInfo);
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-            const { data } = await axios.get('/api/courses/admin', config);
-            setCourses(Array.isArray(data) ? data : []);
+
+            const [coursesRes, univRes] = await Promise.all([
+                axios.get('/api/courses/admin', config),
+                axios.get('/api/admin/universities', config)
+            ]);
+
+            setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
+            setUniversities(Array.isArray(univRes.data) ? univRes.data : []);
         } catch (error) {
-            console.error('Error fetching courses:', error);
+            console.error('Error fetching data:', error);
         }
     };
 
@@ -72,7 +91,10 @@ const StudentManagement = () => {
             const userInfo = JSON.parse(rawInfo);
             const config = {
                 headers: { Authorization: `Bearer ${userInfo.token}` },
-                params: { courseId: selectedCourseId }
+                params: {
+                    courseId: selectedCourseId,
+                    universityId: selectedUniversityId
+                }
             };
             const { data } = await axios.get('/api/admin/students', config);
 
@@ -241,7 +263,7 @@ const StudentManagement = () => {
     };
 
     const [addStudentOpen, setAddStudentOpen] = useState(false);
-    const [newStudentData, setNewStudentData] = useState({ name: '', email: '', password: '', role: 'student' });
+    const [newStudentData, setNewStudentData] = useState({ name: '', email: '', password: '', role: 'student', universityId: '' });
 
     const handleAddStudent = async (e) => {
         e.preventDefault();
@@ -251,7 +273,7 @@ const StudentManagement = () => {
             await axios.post('/api/users', newStudentData, config); // Assuming standard user creation
             showToast?.('Student added successfully', 'success');
             setAddStudentOpen(false);
-            setNewStudentData({ name: '', email: '', password: '', role: 'student' });
+            setNewStudentData({ name: '', email: '', password: '', role: 'student', universityId: '' });
             fetchStudents();
         } catch (error) {
             console.error('Error adding student:', error);
@@ -298,15 +320,37 @@ const StudentManagement = () => {
                         />
                     </div>
                 </GlassCard>
-                <GlassCard className="p-4">
+                <GlassCard className="p-4 flex flex-col sm:flex-row gap-4">
                     <select
                         value={selectedCourseId}
                         onChange={(e) => setSelectedCourseId(e.target.value)}
-                        className="w-full h-full bg-white/5 border border-white/10 rounded-lg text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
+                        className="flex-1 bg-white/5 border border-white/10 rounded-lg text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
                     >
                         <option value="all" className="bg-slate-900">All Courses</option>
                         {courses.map(c => (
                             <option key={c._id} value={c._id} className="bg-slate-900">{c.title}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={selectedUniversityId}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setSelectedUniversityId(val);
+                            setSearchParams(prev => {
+                                if (val === 'all') {
+                                    prev.delete('universityId');
+                                } else {
+                                    prev.set('universityId', val);
+                                }
+                                return prev;
+                            });
+                        }}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-lg text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
+                    >
+                        <option value="all" className="bg-slate-900">All Universities</option>
+                        {universities.map(u => (
+                            <option key={u._id} value={u._id} className="bg-slate-900">{u.name}</option>
                         ))}
                     </select>
                 </GlassCard>
@@ -320,6 +364,7 @@ const StudentManagement = () => {
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Student</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">University / Institution</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Enrolled Course</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Enrollments</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Status</th>
                                 <th className="px-6 py-3 text-right text-xs font-bold text-gray-400 uppercase">Actions</th>
@@ -333,8 +378,8 @@ const StudentManagement = () => {
                                             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
                                                 {student.name?.charAt(0).toUpperCase()}
                                             </div>
-                                            <div>
-                                                <div className="text-sm font-medium text-white">{student.name}</div>
+                                            <div className="cursor-pointer group/name" onClick={() => handleViewStudent(student)}>
+                                                <div className="text-sm font-medium text-white group-hover/name:text-primary transition-colors">{student.name}</div>
                                                 <div className="text-xs text-gray-400">ID: {student._id.slice(-6)}</div>
                                             </div>
                                         </div>
@@ -342,6 +387,9 @@ const StudentManagement = () => {
                                     <td className="px-6 py-4">
                                         <div className="text-sm font-medium text-white">{getUniversityName(student)}</div>
                                         <div className="text-[10px] text-gray-500">{student.email}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-xs text-white/70 font-medium italic">{student.course || 'No Course'}</div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-white">{student.enrollmentCount || 0}</td>
                                     <td className="px-6 py-4">
@@ -419,6 +467,19 @@ const StudentManagement = () => {
                                     value={newStudentData.password}
                                     onChange={(e) => setNewStudentData({ ...newStudentData, password: e.target.value })}
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">University / Institution</label>
+                                <select
+                                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-primary focus:outline-none appearance-none cursor-pointer"
+                                    value={newStudentData.universityId}
+                                    onChange={(e) => setNewStudentData({ ...newStudentData, universityId: e.target.value })}
+                                >
+                                    <option value="" className="bg-slate-900">Independent (No University)</option>
+                                    {universities.map(u => (
+                                        <option key={u._id} value={u._id} className="bg-slate-900">{u.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="pt-4 flex gap-3">
                                 <button
@@ -532,9 +593,9 @@ const StudentManagement = () => {
                                             <div className="flex justify-between items-center">
                                                 <div>
                                                     <p className="text-white font-medium">{enrollment.course?.title || 'Unknown Course'}</p>
-                                                    {enrollment.course?.instructor?.profile?.universityName && (
-                                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mt-0.5">
-                                                            {enrollment.course.instructor.profile.universityName}
+                                                    {(enrollment.course?.universityName || enrollment.course?.instructor?.profile?.universityName || enrollment.course?.instructor?.name) && (
+                                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mt-1">
+                                                            {enrollment.course.universityName || enrollment.course.instructor?.profile?.universityName || enrollment.course.instructor?.name}
                                                         </p>
                                                     )}
                                                     <p className="text-xs text-gray-400 mt-1">Progress: {enrollment.progress || 0}%</p>

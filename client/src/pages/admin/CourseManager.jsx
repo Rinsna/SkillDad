@@ -29,8 +29,20 @@ const CourseManager = () => {
         universityName: '',
         isPublished: false
     });
+    const [universities, setUniversities] = useState([]);
     const navigate = useNavigate();
     const { showToast } = useToast();
+
+    const fetchUniversities = async () => {
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+            const { data } = await axios.get('/api/admin/universities', config);
+            setUniversities(data);
+        } catch (error) {
+            console.error('Error fetching universities:', error);
+        }
+    };
 
     const fetchCourses = async () => {
         try {
@@ -50,6 +62,7 @@ const CourseManager = () => {
 
     useEffect(() => {
         fetchCourses();
+        fetchUniversities();
     }, []);
 
     const handleCreate = async () => {
@@ -58,6 +71,7 @@ const CourseManager = () => {
             description: '',
             category: '',
             price: 0,
+            instructor: '',
             instructorName: '',
             universityName: '',
             isPublished: true
@@ -72,6 +86,7 @@ const CourseManager = () => {
             description: course.description,
             category: course.category,
             price: course.price,
+            instructor: course.instructor?._id || course.instructor || '',
             instructorName: course.instructorName || '',
             universityName: course.universityName || '',
             isPublished: course.isPublished || false
@@ -334,6 +349,32 @@ const CourseManager = () => {
                                             setFormData({ ...formData, price: isNaN(parsed) ? 0 : parsed });
                                         }}
                                     />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-white/70 mb-2 font-inter">
+                                        Provider University
+                                    </label>
+                                    <select
+                                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-inter appearance-none"
+                                        value={formData.instructor}
+                                        onChange={(e) => {
+                                            const univId = e.target.value;
+                                            const univ = universities.find(u => u._id === univId);
+                                            setFormData({
+                                                ...formData,
+                                                instructor: univId,
+                                                universityName: univ ? univ.name : ''
+                                            });
+                                        }}
+                                    >
+                                        <option value="" className="bg-black text-white">Select University</option>
+                                        {universities.map(u => (
+                                            <option key={u._id} value={u._id} className="bg-black text-white">{u.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 

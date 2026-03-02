@@ -159,7 +159,7 @@ const UniversityDashboard = () => {
                     axios.get('/api/users', { ...config, params: { role: 'student', universityId: userInfo._id || userInfo.id } }).catch(() => ({ data: mockStudents })),
                     axios.get('/api/sessions', config).catch(() => ({ data: mockLiveSessions })),
                     axios.get('/api/documents', config).catch(() => ({ data: [] })),
-                    axios.get('/api/courses/admin', config).catch(() => ({ data: [] }))
+                    axios.get('/api/university/courses', config).catch(() => ({ data: [] }))
                 ]);
 
                 setStats(statsRes.data || { studentCount: 0, groupCount: 0, liveSessions: 0, avgScore: 0 });
@@ -168,7 +168,17 @@ const UniversityDashboard = () => {
                 const sessionData = Array.isArray(sessionsRes.data) ? sessionsRes.data : [];
                 setLiveSessions(sessionData.length > 0 ? sessionData : mockLiveSessions);
                 setReceivedDocuments(Array.isArray(docsRes.data) ? docsRes.data : []);
-                setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
+
+                // Align course fetching with ScheduleClass.jsx for robustness
+                const courseData = coursesRes.data;
+                if (Array.isArray(courseData)) {
+                    setCourses(courseData);
+                } else if (courseData && Array.isArray(courseData.courses)) {
+                    setCourses(courseData.courses);
+                } else {
+                    setCourses([]);
+                }
+
                 setAnalytics(mockAnalytics);
                 setLoading(false);
             } catch (err) {
@@ -265,24 +275,39 @@ const UniversityDashboard = () => {
         setShowStudentModal(true);
     };
 
-    const handleSaveStudent = (e) => {
+    const handleSaveStudent = async (e) => {
         e.preventDefault();
-        if (editingStudent) {
-            setStudents(students.map(s => s.id === editingStudent.id ? { ...s, ...newStudentData } : s));
-            alert("Student details updated successfully!");
-        } else {
-            const newId = (students.length + 1).toString();
-            const studentToAdd = {
-                id: newId,
-                ...newStudentData,
-                progress: 0,
-                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newStudentData.name)}&background=random`,
-                documents: ['Admission Letter']
-            };
-            setStudents([...students, studentToAdd]);
-            alert("New student added successfully!");
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+
+        try {
+            if (editingStudent) {
+                // For editing, we might need a different endpoint, but for now we follow the same pattern
+                // as before for UI consistency, or we could implement updateStudentByUniversity
+                setStudents(students.map(s => s.id === editingStudent.id ? { ...s, ...newStudentData } : s));
+                alert("Student details updated successfully! (Local Update)");
+            } else {
+                // Call the new backend API I created
+                const { data } = await axios.post('/api/university/register-student', {
+                    name: newStudentData.name,
+                    email: newStudentData.email,
+                    phone: newStudentData.phone,
+                    // If course selection is ObjectID, pass it here
+                    // If it's title, we might need to find the ID first
+                    courseId: courses.find(c => c.title === newStudentData.course)?._id
+                }, config);
+
+                alert(data.message || "New student registered successfully!");
+
+                // Refresh students list from server
+                const studentsRes = await axios.get('/api/users', { ...config, params: { role: 'student', universityId: userInfo._id || userInfo.id } });
+                setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+            }
+            setShowStudentModal(false);
+        } catch (error) {
+            console.error('Error saving student:', error);
+            alert(error.response?.data?.message || 'Failed to save student');
         }
-        setShowStudentModal(false);
     };
 
     const handleDeleteStudent = (id) => {
@@ -407,14 +432,6 @@ const UniversityDashboard = () => {
                                         <option key={course._id || course} value={course.title || course} className="bg-[#0B0F1A] text-white">{course.title || course}</option>
                                     ))}
                                 </select>
-                                <ModernButton variant="secondary" onClick={() => navigate('/university/groups')}>
-                                    <Users size={16} className="mr-2" />
-                                    Manage Groups
-                                </ModernButton>
-                                <ModernButton onClick={handleAddStudent}>
-                                    <Plus size={16} className="mr-2" />
-                                    Add Student
-                                </ModernButton>
                             </div>
                         </div>
 
@@ -471,18 +488,6 @@ const UniversityDashboard = () => {
                                                     className="p-2 text-white/40 hover:text-white transition-colors"
                                                 >
                                                     <Eye size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEditStudent(student)}
-                                                    className="p-2 text-white/40 hover:text-white transition-colors"
-                                                >
-                                                    <Edit size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteStudent(student._id || student.id)}
-                                                    className="p-2 text-white/40 hover:text-red-400 transition-colors"
-                                                >
-                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </div>
@@ -586,9 +591,9 @@ const UniversityDashboard = () => {
                                         onChange={(e) => setSelectedStudentId(e.target.value)}
                                         className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary appearance-none text-sm min-w-[200px]"
                                     >
-                                        <option value="all" className="bg-[#0B0F1A] text-white">All Students (Aggregate)</option>
+                                        <option value="all" className="bg-black text-white">All Students (Aggregate)</option>
                                         {students.map(s => (
-                                            <option key={s._id || s.id} value={s._id || s.id} className="bg-[#0B0F1A] text-white">{s.name}</option>
+                                            <option key={s._id || s.id} value={s._id || s.id} className="bg-black text-white">{s.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -857,10 +862,21 @@ const UniversityDashboard = () => {
                                         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary appearance-none"
                                     >
                                         <option value="" className="bg-[#0B0F1A] text-white">Select Course</option>
-                                        {courses.map(course => (
-                                            <option key={course._id || course} value={course.title || course} className="bg-[#0B0F1A] text-white">{course.title || course}</option>
-                                        ))}
+                                        {courses.length > 0 ? (
+                                            courses.map(course => (
+                                                <option key={course._id || course} value={course.title || course} className="bg-[#0B0F1A] text-white">
+                                                    {course.title || course}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            <option disabled className="bg-[#0B0F1A] text-white/50">No courses assigned to your institution</option>
+                                        )}
                                     </select>
+                                    {courses.length === 0 && (
+                                        <p className="text-[10px] text-amber-400/70 mt-1 ml-1">
+                                            ⚠️ Contact SkillDad Admin to assign courses to your institution.
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-white/60 mb-1.5">Enrollment Date</label>

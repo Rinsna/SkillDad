@@ -165,15 +165,17 @@ const createCourse = asyncHandler(async (req, res) => {
         throw new Error('Not authorized to create courses');
     }
 
+    const { instructor, instructorName, universityName, title, description, category, price, isPublished } = req.body;
+
     const course = await Course.create({
-        instructor: req.user.id,
-        instructorName: req.body.instructorName,
-        universityName: req.body.universityName,
-        title: req.body.title || 'Untitled Course',
-        description: req.body.description || 'No description',
-        category: req.body.category || 'General',
-        price: req.body.price || 0,
-        isPublished: req.body.isPublished !== undefined ? req.body.isPublished : false,
+        instructor: (req.user.role === 'admin' && instructor) ? instructor : req.user.id,
+        instructorName,
+        universityName,
+        title: title || 'Untitled Course',
+        description: description || 'No description',
+        category: category || 'General',
+        price: price || 0,
+        isPublished: isPublished !== undefined ? isPublished : false,
     });
 
     res.status(201).json(course);
@@ -205,8 +207,13 @@ const updateCourse = asyncHandler(async (req, res) => {
         instructorName,
         universityName,
         isPublished,
-        thumbnail
+        thumbnail,
+        instructor
     } = req.body;
+
+    if (req.user.role === 'admin' && instructor) {
+        course.instructor = instructor;
+    }
 
     if (title) course.title = title;
     if (description) course.description = description;

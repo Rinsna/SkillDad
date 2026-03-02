@@ -82,6 +82,7 @@ const ReconciliationDashboard = lazy(() => import('./pages/admin/ReconciliationD
 const PaymentMonitoringDashboard = lazy(() => import('./pages/admin/PaymentMonitoringDashboard'));
 const CommunicationHub = lazy(() => import('./pages/admin/CommunicationHub'));
 const CouponManager = lazy(() => import('./pages/admin/CouponManager'));
+const UniversityDetail = lazy(() => import('./pages/admin/UniversityDetail'));
 
 // Finance Pages
 const FinanceDashboard = lazy(() => import('./pages/finance/FinanceDashboard'));
@@ -187,6 +188,7 @@ function App() {
                     <Route path="users" element={<UserList />} />
                     <Route path="students" element={<StudentManagement />} />
                     <Route path="university" element={<UniversityManagement />} />
+                    <Route path="university/:id" element={<UniversityDetail />} />
                     <Route path="b2b" element={<B2BManagement />} />
                     <Route path="analytics" element={<PlatformAnalytics />} />
                     <Route path="coupons" element={<CouponManager />} />

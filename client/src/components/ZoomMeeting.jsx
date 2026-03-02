@@ -27,7 +27,8 @@ const ZoomMeeting = ({ sessionId, isHost = false, onLeave, onError }) => {
         setError(null);
 
         // Fetch SDK configuration from backend
-        const token = localStorage.getItem('token');
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        const token = localStorage.getItem('token') || userInfo.token;
         if (!token) {
           throw new Error('Authentication required. Please log in.');
         }
@@ -87,7 +88,7 @@ const ZoomMeeting = ({ sessionId, isHost = false, onLeave, onError }) => {
         const errorMessage = err.response?.data?.message || err.message || 'Failed to join meeting';
         setError(errorMessage);
         setLoading(false);
-        
+
         if (onError) {
           onError(errorMessage);
         }
@@ -165,12 +166,12 @@ const ZoomMeeting = ({ sessionId, isHost = false, onLeave, onError }) => {
   return (
     <div className="relative w-full h-full min-h-[600px]">
       {/* Zoom Meeting Container */}
-      <div 
-        ref={meetingSDKElement} 
+      <div
+        ref={meetingSDKElement}
         className="w-full h-full min-h-[600px] rounded-lg overflow-hidden"
         style={{ width: '100%', height: '100%' }}
       />
-      
+
       {/* Leave Meeting Button (optional overlay) */}
       <div className="absolute top-4 right-4 z-50">
         <button

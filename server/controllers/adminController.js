@@ -391,7 +391,7 @@ const revokePermission = async (req, res) => {
 // @access  Private (Admin)
 const getAllStudents = async (req, res) => {
     try {
-        const { courseId } = req.query;
+        const { courseId, universityId } = req.query;
 
         let studentIds = null;
         if (courseId && courseId !== 'all') {
@@ -404,6 +404,10 @@ const getAllStudents = async (req, res) => {
             query._id = { $in: studentIds };
         }
 
+        if (universityId && universityId !== 'all') {
+            query.universityId = universityId;
+        }
+
         const students = await User.find(query)
             .populate('universityId', 'name profile')
             .select('-password')
@@ -411,10 +415,14 @@ const getAllStudents = async (req, res) => {
 
         const studentsWithEnrollments = await Promise.all(
             students.map(async (student) => {
-                const enrollmentCount = await Enrollment.countDocuments({ student: student._id });
+                const enrollments = await Enrollment.find({ student: student._id })
+                    .populate('course', 'title')
+                    .sort('-createdAt');
+
                 return {
                     ...student.toObject(),
-                    enrollmentCount
+                    enrollmentCount: enrollments.length,
+                    course: enrollments.length > 0 ? enrollments[0].course?.title : 'No Enrollment'
                 };
             })
         );
@@ -787,6 +795,59 @@ async function assignCoursesToUniversity(req, res) {
     }
 }
 
+// @desc    Get university details (including students and assigned courses)
+// @route   GET /api/admin/universities/:id
+// @access  Private (Admin)
+async function getUniversityDetail(req, res) {
+    try {
+        const university = await User.findById(req.params.id)
+            .populate('assignedCourses')
+            .select('-password');
+
+        if (!university || university.role !== 'university') {
+            return res.status(404).json({ message: 'University not found' });
+        }
+
+        // Fetch courses where this university is the instructor (Provider University)
+        const providedCourses = await Course.find({ instructor: university._id }).select('_id');
+        const providedIds = providedCourses.map(p => p._id.toString());
+
+        // Manual assigned IDs
+        const assignedIds = university.assignedCourses
+            ? university.assignedCourses.map(c => (c._id || c).toString())
+            : [];
+
+        // Combine unique IDs
+        const finalIds = Array.from(new Set([...providedIds, ...assignedIds]));
+
+        // Fetch full course data for all identified IDs
+        const uniqueCourses = await Course.find({ _id: { $in: finalIds } });
+
+        const rawStudents = await User.find({ universityId: university._id, role: 'student' })
+            .select('name email isVerified createdAt');
+
+        const students = await Promise.all(rawStudents.map(async (student) => {
+            const latestEnrollment = await Enrollment.findOne({ student: student._id })
+                .populate('course', 'title')
+                .sort('-createdAt');
+            return {
+                ...student.toObject(),
+                course: latestEnrollment ? latestEnrollment.course?.title : 'Enrolled'
+            };
+        }));
+
+        res.json({
+            university: {
+                ...university.toObject(),
+                assignedCourses: uniqueCourses
+            },
+            students
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 module.exports = {
     updateEntity,
     getGlobalStats,
@@ -812,5 +873,6 @@ module.exports = {
     deleteDirector,
     inviteUser,
     getUniversities,
-    assignCoursesToUniversity
+    assignCoursesToUniversity,
+    getUniversityDetail
 };

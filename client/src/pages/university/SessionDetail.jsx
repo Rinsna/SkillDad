@@ -27,9 +27,9 @@ const SessionDetail = () => {
   const fetchSessionDetails = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-      
+      const token = localStorage.getItem('token') || userInfo.token;
+
       const config = {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -69,19 +69,19 @@ const SessionDetail = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -180,19 +180,18 @@ const SessionDetail = () => {
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                  session.status === 'live' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                  session.status === 'scheduled' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                  'bg-white/10 text-white/60 border border-white/20'
-                }`}>
-                  {session.status === 'live' ? '🔴 Live Now' : 
-                   session.status === 'scheduled' ? '📅 Scheduled' : 
-                   '✓ Ended'}
+                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${session.status === 'live' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                    session.status === 'scheduled' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                      'bg-white/10 text-white/60 border border-white/20'
+                  }`}>
+                  {session.status === 'live' ? '🔴 Live Now' :
+                    session.status === 'scheduled' ? '📅 Scheduled' :
+                      '✓ Ended'}
                 </div>
               </div>
               <h1 className="text-3xl font-bold text-white mb-2">{session.topic}</h1>
               <p className="text-white/60 text-sm mb-4">{session.description}</p>
-              
+
               <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2 text-white/60">
                   <Calendar size={16} className="text-primary" />
@@ -231,8 +230,8 @@ const SessionDetail = () => {
               {isHost ? 'Start Your Session' : 'Join Live Session'}
             </h2>
             <p className="text-white/60 mb-6">
-              {isHost 
-                ? 'Click below to start hosting this live session' 
+              {isHost
+                ? 'Click below to start hosting this live session'
                 : 'The session is live. Click below to join the meeting'}
             </p>
             <ModernButton
@@ -272,7 +271,7 @@ const SessionDetail = () => {
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Session Ended</h2>
               <p className="text-white/60 mb-2">This session has concluded</p>
-              
+
               {/* Recording Status */}
               {session.recording?.status === 'completed' && (
                 <div className="mt-4">
@@ -298,7 +297,7 @@ const SessionDetail = () => {
             </GlassCard>
 
             {/* Recording Player */}
-            <ZoomRecordingPlayer 
+            <ZoomRecordingPlayer
               sessionId={sessionId}
               onError={handleMeetingError}
             />

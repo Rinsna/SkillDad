@@ -282,7 +282,25 @@ const getUsers = async (req, res) => {
         if (universityId) query.universityId = universityId;
 
         const users = await User.find(query).select('-password');
-        res.json(users);
+
+        // Populate additional enrollment info for students
+        const usersWithData = await Promise.all(users.map(async (user) => {
+            if (user.role === 'student') {
+                const Enrollment = require('../models/enrollmentModel');
+                const enrollments = await Enrollment.find({ student: user._id })
+                    .populate('course', 'title')
+                    .sort('-createdAt');
+
+                return {
+                    ...user.toObject(),
+                    enrollmentCount: enrollments.length,
+                    course: enrollments.length > 0 ? enrollments[0].course?.title : 'Enrolled Student'
+                };
+            }
+            return user;
+        }));
+
+        res.json(usersWithData);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

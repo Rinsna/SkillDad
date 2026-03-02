@@ -15,6 +15,9 @@ export const UserProvider = ({ children }) => {
     const updateUser = (updatedUser) => {
         setUser(updatedUser);
         localStorage.setItem('userInfo', JSON.stringify(updatedUser)); // Sync with localStorage
+        if (updatedUser?.token) {
+            localStorage.setItem('token', updatedUser.token);
+        }
     };
 
     const logout = () => {

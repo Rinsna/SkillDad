@@ -118,19 +118,29 @@ const GroupManagement = () => {
         }
     };
 
-    const handleRegisterStudent = () => {
-        const studentToAdd = {
-            _id: (students.length + 1).toString(),
-            ...newStudentData,
-            enrollmentDate: new Date().toISOString().split('T')[0],
-            progress: 0,
-            status: 'active',
-            documents: ['Registration Form']
-        };
-        setStudents([...students, studentToAdd]);
-        setShowRegisterStudentModal(false);
-        setNewStudentData({ name: '', email: '', phone: '', course: 'Computer Science' });
-        alert('Student registered in the system successfully!');
+    const handleRegisterStudent = async () => {
+        try {
+            if (!newStudentData.name || !newStudentData.email || !newStudentData.phone) {
+                return alert('Please fill in Name, Email and Phone');
+            }
+
+            const { data } = await axios.post('/api/university/register-student', {
+                name: newStudentData.name,
+                email: newStudentData.email,
+                phone: newStudentData.phone,
+                // courseId is optional, we could add a course selector to the modal if needed
+            }, config);
+
+            alert(data.message || 'Student registered successfully!');
+            setShowRegisterStudentModal(false);
+            setNewStudentData({ name: '', email: '', phone: '', course: 'Computer Science' });
+
+            // Refresh students list
+            fetchStudents();
+        } catch (error) {
+            console.error('Error registering student:', error);
+            alert(error.response?.data?.message || 'Failed to register student');
+        }
     };
 
     const handleAddStudentToGroup = async (groupId) => {

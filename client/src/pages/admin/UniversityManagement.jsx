@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
     Building2,
@@ -69,6 +70,7 @@ const UniversityManagement = () => {
     const [openCoursesModal, setOpenCoursesModal] = useState(false);
     const [selectedCourses, setSelectedCourses] = useState([]);
 
+    const navigate = useNavigate();
     const { showToast } = useToast();
 
     const roiData = [
@@ -473,10 +475,15 @@ const UniversityManagement = () => {
                                 <tr key={partner._id} className="hover:bg-white/5 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-white font-poppins">
+                                            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-white font-poppins cursor-pointer hover:bg-primary/20 transition-colors" onClick={() => navigate(`/admin/university/${partner._id}`)}>
                                                 {partner.name?.charAt(0)}
                                             </div>
-                                            <span className="font-bold text-white">{partner.name}</span>
+                                            <span
+                                                className="font-bold text-white cursor-pointer hover:text-primary transition-colors"
+                                                onClick={() => navigate(`/admin/university/${partner._id}`)}
+                                            >
+                                                {partner.name}
+                                            </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -752,8 +759,8 @@ const UniversityManagement = () => {
                                     value={newEntity.role}
                                     onChange={(e) => setNewEntity({ ...newEntity, role: e.target.value })}
                                 >
-                                    <option value="partner" className="bg-[#0B0F1A]">Partner</option>
-                                    <option value="university" className="bg-[#0B0F1A]">University</option>
+                                    <option value="partner" className="bg-black text-white">Partner</option>
+                                    <option value="university" className="bg-black text-white">University</option>
                                 </select>
                             </div>
                             <div>
