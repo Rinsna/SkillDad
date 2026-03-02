@@ -360,9 +360,15 @@ const ScheduleModal = ({ onClose, onCreated, students }) => {
                         {form.startDate && form.startHour && (
                             <p className="text-[11px] text-emerald-400 mt-1.5 flex items-center gap-1">
                                 <CheckCircle2 size={11} /> Scheduled for{' '}
-                                {new Date(`${form.startDate}T${form.startHour}`).toLocaleString('en-IN', {
-                                    dateStyle: 'medium', timeStyle: 'short'
-                                })}
+                                {(() => {
+                                    const date = new Date(`${form.startDate}T${form.startHour}`);
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const hours = String(date.getHours()).padStart(2, '0');
+                                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                                    return `${day}/${month}/${year} ${hours}:${minutes}`;
+                                })()}
                             </p>
                         )}
                     </div>
@@ -501,7 +507,15 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLin
                         <p className="text-white/40 text-xs mb-2">{session.category}</p>
                         <div className="flex flex-wrap gap-3 text-[11px] text-white/40">
                             <span className="flex items-center gap-1"><Calendar size={11} className="text-primary" />
-                                {new Date(session.startTime).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                                {(() => {
+                                    const date = new Date(session.startTime);
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const hours = String(date.getHours()).padStart(2, '0');
+                                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                                    return `${day}/${month}/${year} ${hours}:${minutes}`;
+                                })()}
                             </span>
                             <span className="flex items-center gap-1"><Clock size={11} className="text-primary" /> {session.duration} min</span>
                             <span className="flex items-center gap-1"><Users size={11} className="text-primary" /> {session.enrolledStudents?.length || 0} students</span>
@@ -540,7 +554,7 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLin
                     {/* Start button */}
                     {session.status === 'scheduled' && (
                         <button
-                            onClick={() => onStart(session._id)}
+                            onClick={() => handleStart(session._id)}
                             disabled={isLoading}
                             title="Start session"
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
@@ -600,7 +614,7 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLin
                     {/* Get signed URL */}
                     {(session.status === 'live' || session.status === 'ended') && (
                         <button
-                            onClick={() => onGetUrl(session._id)}
+                            onClick={() => handleGetUrl(session._id)}
                             disabled={isLoading}
                             title="Get secure playback URL"
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold hover:bg-blue-500/20 transition-colors disabled:opacity-50"
@@ -612,7 +626,7 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, onGetHostLin
                     {/* Delete */}
                     {session.status !== 'live' && (
                         <button
-                            onClick={() => onDelete(session._id)}
+                            onClick={() => handleDelete(session._id)}
                             disabled={isLoading}
                             title="Cancel session"
                             className="p-2 text-white/20 hover:text-red-400 transition-colors"
@@ -811,6 +825,20 @@ const LiveSessionsTab = ({ students }) => {
             setSessions(prev => prev.filter(s => s._id !== id));
             showToast('Session cancelled.', 'info');
         } catch (e) { showToast(e.response?.data?.message || 'Error deleting session', 'error'); }
+        finally { setLoadingId(null); }
+    };
+
+    const handleGetUrl = async (id) => {
+        setLoadingId(id);
+        try {
+            const { data } = await axios.get(API(`/${id}/recording/playback`), { headers: authHeader() });
+            if (data.playbackUrl) {
+                window.open(data.playbackUrl, '_blank');
+                showToast('Opening playback URL...', 'success');
+            } else {
+                showToast('Recording not yet available', 'info');
+            }
+        } catch (e) { showToast(e.response?.data?.message || 'Error getting playback URL', 'error'); }
         finally { setLoadingId(null); }
     };
 
