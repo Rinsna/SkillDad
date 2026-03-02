@@ -600,6 +600,19 @@ const SessionCard = ({ session, onStart, onEnd, onNotify, onDelete, loadingId })
                         </a>
                     )}
 
+                    {/* Student Join Link - Direct Zoom URL */}
+                    {(session.status === 'scheduled' || session.status === 'live') && session.zoom?.joinUrl && (
+                        <a
+                            href={session.zoom.joinUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold hover:bg-blue-500/20 transition-colors"
+                            title="Share this link with students to join the meeting"
+                        >
+                            <ExternalLink size={13} /> Student Link
+                        </a>
+                    )}
+
                     {/* External Meeting Link */}
                     {session.meetingLink && (
                         <a
