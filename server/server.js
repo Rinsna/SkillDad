@@ -89,7 +89,7 @@ app.get('/', (req, res) => {
 
 // Health check endpoint (used by keep-alive ping and uptime monitors)
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.status(200).json({ status: 'ok-v2', timestamp: new Date().toISOString() });
 });
 
 // Debug routes endpoint (DANGEROUS - ONLY FOR FIXING 404s)
