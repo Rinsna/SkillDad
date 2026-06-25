@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment variables
+.env
+server/.env
+client/.env
+
+# Build outputs
+dist/
+build/
+client/dist/
+client/build/
+
+# Database
+.mongodb_data/
+
+# Logs and temporary files
+*.log
+*.txt
+
+# Uploads
+server/uploads/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+client/android/
